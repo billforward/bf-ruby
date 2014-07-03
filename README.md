@@ -22,14 +22,18 @@ TODO: Write usage instructions here
 
 Initialization:
 
-e.g.
+```ruby
 BILLFORWARD_CLIENT_ID=#to be provided by billforward
 BILLFORWARD_CLIENT_SECRET=#to be provided by billforward
 BILLFORWARD_API_HOST=#https://api.billforward.net/{obtain api version from billforward}/
 BILLFORWARD_USERNAME=#organization username
 BILLFORWARD_PASSWORD=#organization password
 BILLFORWARD_ENVIRONMENT=#'development' or 'production'
+```
 
+---
+
+```ruby
 BILL_FORWARD_API_CLIENT = BillForward::ApiClient.new(
     ENV["BILLFORWARD_API_HOST"],
     ENV["BILLFORWARD_CLIENT_ID"],
@@ -38,46 +42,59 @@ BILL_FORWARD_API_CLIENT = BillForward::ApiClient.new(
     ENV["BILLFORWARD_PASSWORD"],
     ENV["BILLFORWARD_ENVIRONMENT"]
 )
+```
 
 Getting single entities:
 
 e.g. subscription with ID:
 
-> subscription = BILL_FORWARD_API_CLIENT.get_first "subscriptions/#{subscription_id}"
+```ruby
+subscription = BILL_FORWARD_API_CLIENT.get_first "subscriptions/#{subscription_id}"
+```
 
 Accessing entity variables:
 
 Use ["field"] e.g.
 
-> puts subscription["id"]
+```ruby
+puts subscription["id"]
+```
 
 Getting a list of entities:
 
 e.g. list subscriptions
 
-> subscriptions = BILL_FORWARD_API_CLIENT.get_results "subscriptions?records=200&order_by=CREATED&order=ASC"
-> puts subscriptions.length
+```ruby
+subscriptions = BILL_FORWARD_API_CLIENT.get_results "subscriptions?records=200&order_by=CREATED&order=ASC"
+puts subscriptions.length
+```
 
 Getting organization_id (this is used for creating entities)
 
-> organization_id = BILL_FORWARD_API_CLIENT.get_organization_id
+```ruby
+organization_id = BILL_FORWARD_API_CLIENT.get_organization_id
+```
 
 Creating single entities:
 
 e.g. account
 
-> created_account = BILL_FORWARD_API_CLIENT.post_first("accounts", {
-          :organizationID => organization_id, #required, can be obtained via
-          :profile => {
-              :firstName => first_name,
-              :lastName => last_name,
-              :mobile => phone_number,
-              :email => email
-          }
-      })
+```ruby
+created_account = BILL_FORWARD_API_CLIENT.post_first("accounts", {
+      :organizationID => organization_id, #required, can be obtained via
+      :profile => {
+          :firstName => first_name,
+          :lastName => last_name,
+          :mobile => phone_number,
+          :email => email
+      }
+  })
 
 created_account["profile"]["firstName"] = "Bob"
+```
 
 Updating single entities
 
+```ruby
 updated_account = BILL_FORWARD_API_CLIENT.put_first("accounts", created_account)
+```
