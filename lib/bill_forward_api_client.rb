@@ -4,6 +4,25 @@ require "rest-client"
 require "json"
 
 module BillForward
+  class ApiClientException < Exception
+    attr_accessor :response
+
+    def initialize(message, response)
+      super(message)
+
+      begin
+        self.response = JSON.parse response
+      rescue => e
+        self.response = nil
+      end
+    end
+
+  end
+
+  class ApiTokenException < ApiClientException
+
+  end
+
   class ApiClient
     def initialize(host, client_id, client_secret, username, password, environment)
       @host = host
@@ -65,6 +84,14 @@ module BillForward
       response["results"][0]
     end
 
+    def post_first!(url, data)
+      response = post!(url, data)
+
+      return nil if response.nil? or response["results"].length == 0
+
+      response["results"][0]
+    end
+
     def get(url)
       log "getting #{url}"
       token = get_token
@@ -107,6 +134,30 @@ module BillForward
       rescue => e
         log "error", e
         return nil
+      end
+      end
+
+    def post!(url, data = nil)
+      log "posting #{url}"
+      token = get_token
+
+      log "token: #{token}"
+      raise ApiTokenException, "Could not get API Token" if token.nil?
+
+      begin
+        response = RestClient.post("#{@host}#{url}",
+                                   data.to_json,
+                                   :content_type => :json,
+                                   :accept => :json,
+                                   :Authorization => "Bearer #{token}")
+
+        log "response: #{response.to_str}"
+
+        return JSON.parse(response.to_str)
+      rescue => e
+        log "error", e.response
+
+        raise ApiClientException.new "BillForward API call failed", e.response
       end
     end
 
