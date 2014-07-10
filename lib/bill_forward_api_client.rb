@@ -109,7 +109,11 @@ module BillForward
 
         return JSON.parse(response.to_str)
       rescue => e
-        log "error", e.response.to_str
+        if e.respond_to? "response"
+          log "error", e.response.to_str
+        else
+          log e
+        end
         return nil
       end
     end
@@ -155,9 +159,14 @@ module BillForward
 
         return JSON.parse(response.to_str)
       rescue => e
-        log "error", e.response
+        if e.respond_to? "response"
+          log "error", e.response.to_str
+          raise ApiClientException.new "BillForward API call failed", e.response
+        else
+          log e
+          raise ApiClientException.new "BillForward API call failed", nil
+        end
 
-        raise ApiClientException.new "BillForward API call failed", e.response
       end
     end
 
@@ -179,7 +188,11 @@ module BillForward
 
         return JSON.parse(response.to_str)
       rescue => e
-        log "error", e.response.to_str
+        if e.respond_to? "response"
+          log "error", e.response.to_str
+        else
+          log e
+        end
         return nil
       end
     end
