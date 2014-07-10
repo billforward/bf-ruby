@@ -68,6 +68,14 @@ module BillForward
       response["results"][0]
     end
 
+    def retire_first(url)
+      response = retire(url)
+
+      return nil if response.nil? or response["results"].length == 0
+
+      response["results"][0]
+    end
+
     def put_first(url, data)
       response = put(url, data)
 
@@ -101,6 +109,32 @@ module BillForward
 
       begin
         response = RestClient.get("#{@host}#{url}",
+                                  {
+                                      :Authorization => "Bearer #{token}"
+                                  })
+
+        log "response: #{response.to_str}"
+
+        return JSON.parse(response.to_str)
+      rescue => e
+        if e.respond_to? "response"
+          log "error", e.response.to_str
+        else
+          log e
+        end
+        return nil
+      end
+    end
+
+    def retire(url)
+      log "retiring #{url}"
+      token = get_token
+
+      log "token: #{token}"
+      return nil if token.nil?
+
+      begin
+        response = RestClient.delete("#{@host}#{url}",
                                   {
                                       :Authorization => "Bearer #{token}"
                                   })
@@ -218,7 +252,11 @@ module BillForward
         access_token = @authorization["access_token"]
         return access_token
       rescue => e
-        log "BILL FORWARD CLIENT ERROR", e.to_json
+        if e.respond_to? "response"
+          log "BILL FORWARD CLIENT ERROR", e.response
+        else
+          log "BILL FORWARD CLIENT ERROR", e, e.to_json
+        end
         return nil
       end
     end
