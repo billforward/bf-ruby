@@ -7,11 +7,15 @@ module BillForward
   class ApiClientException < Exception
     attr_accessor :response
 
-    def initialize(message, response)
+    def initialize(message, response=nil)
       super(message)
 
       begin
-        self.response = JSON.parse response
+        if response.nil?
+          self.response = nil
+        else
+          self.response = JSON.parse response
+        end
       rescue => e
         self.response = nil
       end
@@ -24,13 +28,38 @@ module BillForward
   end
 
   class ApiClient
-    def initialize(host, client_id, client_secret, username, password, environment)
-      @host = host
-      @client_id = client_id
-      @client_secret = client_secret
-      @username = username
-      @password = password
-      @environment = environment
+    def initialize(options={})
+      if options[:host] and options[:environment]
+        @host = options[:host]
+        @environment = options[:environment]
+      else
+        raise ApiClientException.new "Failed to initialize BillForward API Client\n" +
+                                         "Required parameters: :host and :environment, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                         "Supplied Parameters: #{options}"
+      end
+
+      if options[:api_token]
+        @api_token = options[:api_token]
+      else
+        @api_token = nil
+        if options[:client_id] and options[:client_secret] and options[:username] and options[:password]
+          @client_id = options[:client_id]
+          @client_secret = options[:client_secret]
+          @username = options[:username]
+          @password = options[:password]
+        else
+          raise ApiClientException.new "Failed to initialize BillForward API Client\n"+
+                                           "Required parameters: :host and :environment, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                           "Supplied Parameters: #{options}"
+        end
+
+      end
+      # @host = host
+      # @client_id = client_id
+      # @client_secret = client_secret
+      # @username = username
+      # @password = password
+      # @environment = environment
 
       @authorization = nil
       @organization_id = nil
@@ -135,9 +164,9 @@ module BillForward
 
       begin
         response = RestClient.delete("#{@host}#{url}",
-                                  {
-                                      :Authorization => "Bearer #{token}"
-                                  })
+                                     {
+                                         :Authorization => "Bearer #{token}"
+                                     })
 
         log "response: #{response.to_str}"
 
@@ -154,6 +183,8 @@ module BillForward
 
     def post(url, data = nil)
       log "posting #{url}"
+      log JSON.pretty_generate(data) if (not data.nil?) and @environment == "development"
+
       token = get_token
 
       log "token: #{token}"
@@ -170,13 +201,19 @@ module BillForward
 
         return JSON.parse(response.to_str)
       rescue => e
-        log "error", e
+        if e.respond_to? "response"
+          log "error", e.response.to_str
+        else
+          log e
+        end
         return nil
       end
-      end
+    end
 
     def post!(url, data = nil)
       log "posting #{url}"
+      log JSON.pretty_generate(data) if (not data.nil?) and @environment == "development"
+
       token = get_token
 
       log "token: #{token}"
@@ -206,6 +243,8 @@ module BillForward
 
     def put(url, data = nil)
       log "putting #{url}"
+      log JSON.pretty_generate(data) if (not data.nil?) and @environment == "development"
+
       token = get_token
 
       log "token: #{token}"
@@ -213,10 +252,10 @@ module BillForward
 
       begin
         response = RestClient.put("#{@host}#{url}",
-                                   data.to_json,
-                                   :content_type => :json,
-                                   :accept => :json,
-                                   :Authorization => "Bearer #{token}")
+                                  data.to_json,
+                                  :content_type => :json,
+                                  :accept => :json,
+                                  :Authorization => "Bearer #{token}")
 
         log "response: #{response.to_str}"
 
@@ -234,32 +273,34 @@ module BillForward
     private
 
     def get_token
-      if @authorization and Time.now < @authorization["expires_at"]
-        return @authorization["access_token"]
-      end
-      begin
-        response = RestClient.get("#{@host}oauth/token", :params => {
-            :username => @username,
-            :password => @password,
-            :client_id => @client_id,
-            :client_secret => @client_secret,
-            :grant_type => "password"
-        }, :accept => :json)
-
-        @authorization = JSON.parse(response.to_str)
-        @authorization["expires_at"] = Time.now + @authorization["expires_in"]
-
-        access_token = @authorization["access_token"]
-        return access_token
-      rescue => e
-        if e.respond_to? "response"
-          log "BILL FORWARD CLIENT ERROR", e.response
-        else
-          log "BILL FORWARD CLIENT ERROR", e, e.to_json
+      if @api_token
+        @api_token
+      else
+        if @authorization and Time.now < @authorization["expires_at"]
+          return @authorization["access_token"]
         end
-        return nil
+        begin
+          response = RestClient.get("#{@host}oauth/token", :params => {
+              :username => @username,
+              :password => @password,
+              :client_id => @client_id,
+              :client_secret => @client_secret,
+              :grant_type => "password"
+          }, :accept => :json)
+
+          @authorization = JSON.parse(response.to_str)
+          @authorization["expires_at"] = Time.now + @authorization["expires_in"]
+
+          @authorization["access_token"]
+        rescue => e
+          if e.respond_to? "response"
+            log "BILL FORWARD CLIENT ERROR", e.response
+          else
+            log "BILL FORWARD CLIENT ERROR", e, e.to_json
+          end
+          nil
+        end
       end
     end
   end
-
 end

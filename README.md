@@ -23,24 +23,21 @@ TODO: Write usage instructions here
 Initialization:
 
 ```ruby
-BILLFORWARD_CLIENT_ID=#to be provided by billforward
-BILLFORWARD_CLIENT_SECRET=#to be provided by billforward
-BILLFORWARD_API_HOST=#https://api.billforward.net/{obtain api version from billforward}/
-BILLFORWARD_USERNAME=#organization username
-BILLFORWARD_PASSWORD=#organization password
-BILLFORWARD_ENVIRONMENT=#'development' or 'production'
+BILLFORWARD_API_HOST=#https://api-sandbox.billforward.net/{API VERSION}/
+BILLFORWARD_ENVIRONMENT=development
+
+BILLFORWARD_API_TOKEN=Api Token obtained from https://app-sandbox.billforward.net/setup/#/personal/api-keys
+
+We also support client-id and client-secret authentication. Please contact BillForward support through http://www.billforward.net/contact-us/
 ```
 
 ---
 
 ```ruby
 BILL_FORWARD_API_CLIENT = BillForward::ApiClient.new(
-    ENV["BILLFORWARD_API_HOST"],
-    ENV["BILLFORWARD_CLIENT_ID"],
-    ENV["BILLFORWARD_CLIENT_SECRET"],
-    ENV["BILLFORWARD_USERNAME"],
-    ENV["BILLFORWARD_PASSWORD"],
-    ENV["BILLFORWARD_ENVIRONMENT"]
+    :host => ENV["BILLFORWARD_API_HOST"],
+    :environment => ENV["BILLFORWARD_ENVIRONMENT"],
+    :api_token=>ENV["BILLFORWARD_API_TOKEN"]
 )
 ```
 
