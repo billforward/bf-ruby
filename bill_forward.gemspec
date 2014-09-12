@@ -1,14 +1,14 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'bill_forward_api_client/version'
+require 'bill_forward/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "bill_forward_api_client"
-  spec.version       = BillForwardApiClient::VERSION
+  spec.name          = "bill_forward"
+  spec.version       = BillForward::VERSION
   spec.authors       = ["BillForward"]
   spec.email         = ["support@billforward.net"]
-  spec.summary       = "BillForward Rest API Client"
+  spec.summary       = "BillForward Ruby Client Library"
   spec.description   = "Work in Progress"
   spec.homepage      = "http://www.billforward.net"
   spec.license       = "NONE"

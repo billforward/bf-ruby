@@ -1,4 +1,4 @@
-Copyright (c) 2014 Firtina Ozbalikci
+Copyright (c) 2014 BillForward, Inc
 
 MIT License
 

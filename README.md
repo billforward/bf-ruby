@@ -6,7 +6,7 @@ TODO: Write a gem description
 
 Add this line to your application's Gemfile:
 
-    gem 'bill_forward_api_client'
+    gem 'bill_forward'
 
 And then execute:
 
@@ -14,7 +14,7 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install bill_forward_api_client
+    $ gem install bill_forward
 
 ## Usage
 
