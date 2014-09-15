@@ -34,7 +34,7 @@ We also support client-id and client-secret authentication. Please contact BillF
 ---
 
 ```ruby
-BILL_FORWARD_API_CLIENT = BillForward::ApiClient.new(
+BILL_FORWARD_API_CLIENT = BillForward::Client.new(
     :host => ENV["BILLFORWARD_API_HOST"],
     :environment => ENV["BILLFORWARD_ENVIRONMENT"],
     :api_token=>ENV["BILLFORWARD_API_TOKEN"]
