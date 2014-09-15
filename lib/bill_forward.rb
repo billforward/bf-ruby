@@ -1,4 +1,4 @@
-require 'bill_forward\version'
+require 'bill_forward/version'
 
 require "rest-client"
 require "json"
