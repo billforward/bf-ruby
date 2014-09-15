@@ -92,7 +92,7 @@ module BillForward
     def get_first(url)
       response = get(url)
 
-      return nil if response.nil? or response["results"].length == 0
+      raise ApiClientException.new("Cannot get first; request returned empty list of results.", response) if response.nil? or response["results"].length == 0
 
       response["results"][0]
     end
@@ -137,21 +137,23 @@ module BillForward
       return nil if token.nil?
 
       begin
+        RestClient.proxy = "http://127.0.0.1:8888"
         response = RestClient.get("#{@host}#{url}",
                                   {
                                       :Authorization => "Bearer #{token}"
                                   })
 
-        log "response: #{response.to_str}"
+        #log "response: "+response.to_str
+        #log response.to_str
 
         return JSON.parse(response.to_str)
       rescue => e
+        log e
         if e.respond_to? "response"
-          log "error", e.response.to_str
+          raise ApiClientException.new "BillForward API call failed", e.response.to_str
         else
-          log e
+          raise ApiClientException.new "BillForward API call failed"
         end
-        return nil
       end
     end
 
@@ -173,9 +175,9 @@ module BillForward
         return JSON.parse(response.to_str)
       rescue => e
         if e.respond_to? "response"
-          log "error", e.response.to_str
+          raise ApiClientException.new "BillForward API call failed", e.response.to_str
         else
-          log e
+          raise ApiClientException.new "BillForward API call failed"
         end
         return nil
       end
@@ -202,11 +204,10 @@ module BillForward
         return JSON.parse(response.to_str)
       rescue => e
         if e.respond_to? "response"
-          log "error", e.response.to_str
+          raise ApiClientException.new "BillForward API call failed", e.response.to_str
         else
-          log e
+          raise ApiClientException.new "BillForward API call failed"
         end
-        return nil
       end
     end
 
