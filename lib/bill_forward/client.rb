@@ -23,6 +23,9 @@ module BillForward
   end
 
   class Client
+    attr_accessor :host
+    attr_accessor :environment
+    attr_accessor :api_token
     def initialize(options={})
       if options[:host] and options[:environment]
         @host = options[:host]
