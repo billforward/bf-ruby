@@ -125,7 +125,7 @@ module BillForward
     def get_first(url)
       response = get(url)
 
-      raise ClientException.new("Cannot get first; request returned empty list of results.", response) if response.nil? or response["results"].length == 0
+      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
 
       response["results"][0]
     end
@@ -170,7 +170,7 @@ module BillForward
       return nil if token.nil?
 
       begin
-        RestClient.proxy = "http://127.0.0.1:8888"
+        #RestClient.proxy = "http://127.0.0.1:8888"
         response = RestClient.get("#{@host}#{url}",
                                   {
                                       :Authorization => "Bearer #{token}"

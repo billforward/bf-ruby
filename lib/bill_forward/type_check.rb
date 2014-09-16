@@ -1,6 +1,4 @@
 module BillForward
-	class TypeError < StandardError
-	end
 	class TypeCheck
 		def self.verify(expectedClass, value, argName)
 			expectedClassName = expectedClass.name

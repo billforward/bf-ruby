@@ -24,3 +24,4 @@ mkmf.log
 .rakeTasks
 onelinechange.bat
 twolinechange.bat
+spec/test_constants.rb
