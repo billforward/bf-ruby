@@ -18,6 +18,9 @@ module BillForward
 
   end
 
+  class ClientInstantiationException < Exception
+  end
+
   class ApiTokenException < ClientException
 
   end
@@ -26,12 +29,44 @@ module BillForward
     attr_accessor :host
     attr_accessor :environment
     attr_accessor :api_token
+
+    # provide access to self statics
+    class << self
+      # default client is a singleton client
+      attr_reader :default_client
+      def default_client=(default_client)
+        # raise ClientException.new("Failed to set default BillForward API Client\n" +
+        #   "'default_client' provided was blank.") if default_client.blank?
+
+        TypeCheck.verify(Client, default_client, 'default_client')
+        @default_client = default_client
+      end
+      def default_client()
+        raise ClientInstantiationException.new("Failed to get default BillForward API Client; " +
+           "'default_client' is blank. Please set a 'default_client' first.") if
+        @default_client.blank?
+        @default_client
+      end
+    end
+
+
+    # Constructs a client, and sets it to be used as the default client.
+    # @param options={} [Hash] Options with which to construct client
+    # 
+    # @return [Client] The constructed client
+    def self.makeDefaultClient(options)
+      constructedClient = self.new(options)
+      self.default_client = constructedClient
+    end
+
     def initialize(options={})
+      TypeCheck.verify(Hash, options, 'options')
+
       if options[:host] and options[:environment]
         @host = options[:host]
         @environment = options[:environment]
       else
-        raise ClientException.new "Failed to initialize BillForward API Client\n" +
+        raise ClientInstantiationException.new "Failed to initialize BillForward API Client\n" +
                                          "Required parameters: :host and :environment, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
                                          "Supplied Parameters: #{options}"
       end

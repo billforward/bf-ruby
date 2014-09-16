@@ -1,10 +1,12 @@
 module BillForward
+	class TypeError < StandardError
+	end
 	class TypeCheck
 		def self.verify(expectedClass, value, argName)
 			expectedClassName = expectedClass.name
 			actualClassName = value.class.name
-			raise "Expected instance of '#{expectedClassName}' at argument '#{argName}'. "+
-			"Instead received: '#{actualClassName}'" unless value.kind_of?(expectedClass)
+			raise TypeError.new("Expected instance of '#{expectedClassName}' at argument '#{argName}'. "+
+			"Instead received: '#{actualClassName}'") unless value.kind_of?(expectedClass)
 		end
 	end
 end
