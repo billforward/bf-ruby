@@ -10,7 +10,8 @@ else
 	# however if used in this placeholder state, functional tests will not pass.
 	module BillForwardTest
 		BILLFORWARD_API_HOST='insert-API-URL-here'
-		BILLFORWARD_ENVIRONMENT="development"
+		# logging is enabled in 'development'. any other environment is default.
+		BILLFORWARD_ENVIRONMENT="default"
 
 		BILLFORWARD_API_TOKEN="insert-access-token-here"
 

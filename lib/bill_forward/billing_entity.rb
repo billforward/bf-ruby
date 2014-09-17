@@ -3,23 +3,25 @@ module BillForward
 		attr_accessor :client
 
 		def initialize(client = nil)
-			client = singleton_client if client.blank?
+			client = self.class.singleton_client if client.blank?
 
 			TypeCheck.verify(Client, client, 'client')
 			@client = client
 		end
 
-		def singleton_client
-			Client.default_client
-		end
+		class << self
+			def get_by_id(id, customClient = nil)
+				client = customClient
+				client = singleton_client if client.blank?
 
-		def self.get_by_id(id, customClient = nil)
-			client = customClient
-			client = singleton_client if client.blank?
+				raise ArgumentError.new("id cannot be blank") if id.blank?
 
-			raise ArgumentError.new("id cannot be blank") if id.blank?
+				client.get_first "accounts/#{id}"
+			end
 
-			client.get_first "accounts/#{id}"
+			def singleton_client
+				Client.default_client
+			end
 		end
 	end
 end

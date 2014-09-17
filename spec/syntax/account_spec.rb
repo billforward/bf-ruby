@@ -1,4 +1,5 @@
-require 'spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)), "..", "spec_helper")
+
 describe BillForward do
 	describe 'Account' do
 		describe '#new' do

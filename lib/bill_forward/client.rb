@@ -35,8 +35,11 @@ module BillForward
       # default client is a singleton client
       attr_reader :default_client
       def default_client=(default_client)
-        # raise ClientException.new("Failed to set default BillForward API Client\n" +
-        #   "'default_client' provided was blank.") if default_client.blank?
+        if (default_client == nil)
+          # meaningless, but required for resetting this class after a test run
+          @default_client = nil
+          return
+        end
 
         TypeCheck.verify(Client, default_client, 'default_client')
         @default_client = default_client
@@ -177,6 +180,7 @@ module BillForward
                                   })
 
         #log "response: "+response.to_str
+        #log JSON.pretty_generate(JSON.parse(response.to_str))
         #log response.to_str
 
         return JSON.parse(response.to_str)

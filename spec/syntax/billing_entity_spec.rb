@@ -1,4 +1,5 @@
-require 'spec_helper'
+require File.join(File.expand_path(File.dirname(__FILE__)), "..", "spec_helper")
+
 describe BillForward do
 	describe 'BillingEntity' do
 		before :all do
@@ -27,8 +28,8 @@ describe BillForward do
 				end
 			end
 			context 'before creation of singleton client' do
-				# note: this spec needs to run before any singleton clients are made
 				it 'raises error' do
+					BillForward::Client.default_client = nil
 					expect{BillForward::Account.new}.to raise_error(BillForward::ClientInstantiationException)
 				end
 			end
