@@ -38,8 +38,14 @@ module BillForward
 		end
 
 		def method_missing(method_id, *arguments, &block)
-		  # no call to super; our criteria is all keys.
-		  @_state_params[method_id]
+			# no call to super; our criteria is all keys.
+			#setter
+			if /^(\w+)=$/ =~ method_id.to_s
+				@_state_params[$1] = arguments.first
+				return @_state_params[$1]
+			end
+			#getter
+			@_state_params[method_id.to_s]
 		end
 
 	protected

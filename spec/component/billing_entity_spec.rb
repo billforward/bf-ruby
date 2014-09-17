@@ -1,49 +1,36 @@
 require File.join(File.expand_path(File.dirname(__FILE__)), "..", "spec_helper")
 
-describe BillForward::Account do
+describe BillForward::BillingEntity do
 	before :all do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
 	end
-	describe '::get_by_id' do
+	describe '[key]' do
 		before :each do
-      # skip OAuth request
+      		# skip OAuth request
 			allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
 		end
-		context 'where account does not exist' do
-			let(:RestClient)      { double :RestClient }
-			it "gets empty list" do
+		context 'upon gotten entity' do
+			before :each do
 				response = double
-		    allow(response).to receive(:to_str).and_return(canned_noresults)
-		    allow(RestClient).to receive(:get).and_return(response)
+			    allow(response).to receive(:to_str).and_return(canned_entity)
+			    allow(RestClient).to receive(:get).and_return(response)
 
-				expect{BillForward::Account.get_by_id 'anything'}.to raise_error(IndexError)
+			    @entity = BillForward::Account.get_by_id 'anything'
 			end
-  	end
-		context 'where account exists' do
-			it "gets the account" do
-        account_id = '74DA7D63-EAEB-431B-9745-76F9109FD842'
-
-				response = double
-		    allow(response).to receive(:to_str).and_return(canned_account)
-		    allow(RestClient).to receive(:get).and_return(response)
-
-		    account = BillForward::Account.get_by_id account_id
-
-				expect(account.id).to eq(account_id)
+			it "gets property" do
+				expect(@entity.id).to eq('74DA7D63-EAEB-431B-9745-76F9109FD842')
+			end
+			it "can change property" do
+				newid = 'whatever'
+				@entity.idd = newid
+				expect(@entity.idd).to eq(newid)
 			end
 		end
 	end
 end
 
-def canned_noresults
-'{
-  "executionTime": 1070093,
-  "results": []
-}'
-end
-
-def canned_account()
+def canned_entity
 '{
   "executionTime": 1070093,
   "results": [
