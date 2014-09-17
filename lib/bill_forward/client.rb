@@ -46,8 +46,8 @@ module BillForward
       end
       def default_client()
         raise ClientInstantiationException.new("Failed to get default BillForward API Client; " +
-           "'default_client' is blank. Please set a 'default_client' first.") if
-        @default_client.blank?
+           "'default_client' is nil. Please set a 'default_client' first.") if
+        @default_client.nil?
         @default_client
       end
     end

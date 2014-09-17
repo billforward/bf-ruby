@@ -4,6 +4,6 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'rest-client', '~> 1.6.8'
-gem 'activesupport', '~> 3.2'
 gem 'json'
 gem 'require_all'
+gem 'activesupport', '>= 3.1.0', '< 4'

@@ -9,9 +9,9 @@ describe BillForward::Account do
 		before :each do
 			allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
 		end
-		context 'account does not exist' do
+		context 'where account does not exist' do
 			let(:RestClient)      { double :RestClient }
-			it "should get empty list" do
+			it "gets empty list" do
   				account_id = "74DA7D63-EAEB-431B-9745-76F9109FD842"
 
   				response = double
@@ -21,8 +21,8 @@ describe BillForward::Account do
   				expect{BillForward::Account.get_by_id account_id}.to raise_error(IndexError)
   			end
   		end
-  		context 'account exists' do
-  			it "should get the account" do
+  		context 'where account exists' do
+  			it "gets the account" do
   				account_id = "74DA7D63-EAEB-431B-9745-76F9109FD842"
 
   				response = double
@@ -31,7 +31,7 @@ describe BillForward::Account do
 
 			    account = BillForward::Account.get_by_id account_id
 
-  				expect(account['id']).to eq('74DA7D63-EAEB-431B-9745-76F9109FD842')
+  				expect(account.id).to eq('74DA7D63-EAEB-431B-9745-76F9109FD842')
   			end
 		end
 	end
