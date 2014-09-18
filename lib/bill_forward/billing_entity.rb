@@ -25,6 +25,8 @@ module BillForward
 		end
 
 		class << self
+			attr_accessor :resource_path
+
 			def get_by_id(id, customClient = nil)
 				client = customClient
 				client = singleton_client if client.nil?
@@ -47,6 +49,11 @@ module BillForward
 			end
 			#getter
 			get_state_param(method_id.to_s)
+		end
+
+		def to_s
+			json_string = @_state_params.to_json
+			JSON.pretty_generate(JSON.parse(json_string))
 		end
 
 	protected
@@ -73,13 +80,27 @@ module BillForward
 			set_state_param(key, value)
 		end
 
-		def unserialize_array_entities(key, entity_class, hash)
+		def unserialize_entity(key, entity_class, hash)
 			# ensure that the provided entity class derives from BillingEntity
 			TypeCheck.verifyClass(BillingEntity, entity_class, 'entity_class')
 			TypeCheck.verifyObj(Hash, hash, 'hash')
 
 			# register the entity as one that requires bespoke serialization
 			@_registered_entities[key] = entity_class
+			# if key exists in the provided hash, add it to current entity's model
+			if hash.has_key? key
+				entity = build_entity(entity_class, hash[key])
+				set_state_param(key, entity)
+			end
+		end
+
+		def unserialize_array_of_entities(key, entity_class, hash)
+			# ensure that the provided entity class derives from BillingEntity
+			TypeCheck.verifyClass(BillingEntity, entity_class, 'entity_class')
+			TypeCheck.verifyObj(Hash, hash, 'hash')
+
+			# register the array of entities as one that requires bespoke serialization
+			@_registered_entity_arrays[key] = entity_class
 			# if key exists in the provided hash, add it to current entity's model
 			if hash.has_key? key
 				entities = build_entity_array(entity_class, hash[key])

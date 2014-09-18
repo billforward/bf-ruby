@@ -82,4 +82,16 @@ describe BillForward::BillingEntity do
 			end
 		end
 	end
+	describe '::resource_path' do
+		it "points to expected endpoint" do
+			resource_path = BillForward::Account.resource_path
+			expect(resource_path.path).to eq("accounts")
+		end
+		it "supports multiple entities with endpoints" do
+			resource_path1 = BillForward::Account.resource_path
+			expect(resource_path1.path).to eq("accounts")
+			resource_path2 = BillForward::PaymentMethod.resource_path
+			expect(resource_path2.path).to eq("payment-methods")
+		end
+	end
 end

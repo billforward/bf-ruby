@@ -27,15 +27,50 @@ describe BillForward::BillingEntity do
 				expect(@entity.idd).to eq(newid)
 			end
 			describe 'nested array of entities' do
-				subject :role do
-					roles = @entity.roles
-					roles.first
+				context 'once unserialized' do
+					subject :roles do
+						roles = @entity.roles
+					end
+					subject :role do
+						roles.first
+					end
+					it 'is an array' do
+						expect(roles.class).to eq(Array)
+					end
+					describe 'some element' do
+						it 'is an entity' do
+							expect(role.class).to eq(BillForward::Role)
+						end
+						it 'has expected properties' do
+							expect(role.role).to eq('user')
+						end
+						it 'has mutable properties' do
+							expect(role.role).to eq('user')
+							new_role = 'abuser'
+							role.role = new_role
+							expect(role.role).to eq(new_role)
+						end
+					end
 				end
-				it 'are unserialized as entities' do
-					expect(role.class).to eq(BillForward::Role)
-				end
-				it 'are unserialized with expected entity properties' do
-					expect(role.role).to eq('user')
+			end
+			describe 'nested entity' do
+				context 'once unserialized' do
+					subject :profile do
+						profile = @entity.profile
+					end
+					it 'is an entity' do
+						expect(profile.class).to eq(BillForward::Profile)
+					end
+					it 'has expected properties' do
+						expect(profile.firstName).to eq('Test')
+					end
+					it 'has mutable properties' do
+						expect(profile.firstName).to eq('Test')
+						new_name = 'Best'
+						profile.firstName = new_name
+						expect(profile.firstName).to eq(new_name)
+						puts @entity
+					end
 				end
 			end
 		end
