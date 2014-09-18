@@ -3,14 +3,16 @@ module BillForward
 		# legacy Ruby gives us this 'id' chuff. we kinda need it back.
 		undef id
 		attr_accessor :_client
-		attr_accessor :_state_params
 
 		def initialize(state_params = nil, client = nil)
 			client = self.class.singleton_client if client.nil?
 			state_params = {} if state_params.nil?
 
-			TypeCheck.verify(Client, client, 'client')
-			TypeCheck.verify(Hash, state_params, 'state_params')
+			TypeCheck.verifyObj(Client, client, 'client')
+			TypeCheck.verifyObj(Hash, state_params, 'state_params')
+
+			@_registered_entities = Hash.new
+			@_registered_entity_arrays = Hash.new
 
 			@_client = client
 			# initiate with empty state params
@@ -41,22 +43,71 @@ module BillForward
 			# no call to super; our criteria is all keys.
 			#setter
 			if /^(\w+)=$/ =~ method_id.to_s
-				@_state_params[$1] = arguments.first
-				return @_state_params[$1]
+				return set_state_param($1, arguments.first)
 			end
 			#getter
-			@_state_params[method_id.to_s]
+			get_state_param(method_id.to_s)
 		end
 
 	protected
+		def set_state_param(key, value)
+			@_state_params[key] = value
+			get_state_param(key)
+		end
+
+		def get_state_param(key)
+			@_state_params[key]
+		end
+
 		def unserialize_all(hash)
 			hash.each do |key, value|
-			  unserialize_one key, value
+				unserialize_one key, value
 			end
 		end
 
 		def unserialize_one(key, value)
-			@_state_params[key] = value
+			if value.is_a? Array
+
+			#elsif value.is_a? String
+			end
+			set_state_param(key, value)
+		end
+
+		def unserialize_array_entities(key, entity_class, hash)
+			# ensure that the provided entity class derives from BillingEntity
+			TypeCheck.verifyClass(BillingEntity, entity_class, 'entity_class')
+			TypeCheck.verifyObj(Hash, hash, 'hash')
+
+			# register the entity as one that requires bespoke serialization
+			@_registered_entities[key] = entity_class
+			# if key exists in the provided hash, add it to current entity's model
+			if hash.has_key? key
+				entities = build_entity_array(entity_class, hash[key])
+				set_state_param(key, entities)
+			end
+		end
+
+		def build_entity_array(entity_class, entity_hashes)
+			TypeCheck.verifyObj(Array, entity_hashes, 'entity_hashes')
+
+			entity_array = Array.new
+			# maybe it's an empty array, but that's okay too.
+			entity_hashes.each do |value|
+				new_entity = build_entity(entity_class, value)
+				entity_array.push(new_entity)
+			end
+			entity_array
+		end
+
+		def build_entity(entity_class, hash)
+			# eventually we will allow you to pass an entity into here, rather than just hash
+			TypeCheck.verifyObj(Hash, hash, 'hash')
+
+			# this entity should the same client as we do
+			client = @_client
+
+			new_entity = entity_class.new(hash, client)
+			new_entity
 		end
 	end
 end

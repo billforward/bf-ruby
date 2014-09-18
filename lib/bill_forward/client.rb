@@ -41,7 +41,7 @@ module BillForward
           return
         end
 
-        TypeCheck.verify(Client, default_client, 'default_client')
+        TypeCheck.verifyObj(Client, default_client, 'default_client')
         @default_client = default_client
       end
       def default_client()
@@ -63,7 +63,7 @@ module BillForward
     end
 
     def initialize(options={})
-      TypeCheck.verify(Hash, options, 'options')
+      TypeCheck.verifyObj(Hash, options, 'options')
 
       if options[:host] and options[:environment]
         @host = options[:host]

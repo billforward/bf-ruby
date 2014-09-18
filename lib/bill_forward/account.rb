@@ -11,5 +11,15 @@ module BillForward
   	def resource_path
   		self.class.resource_path
   	end
+
+    def get_roles
+      roles
+    end
+  protected
+    def unserialize_all(hash)
+      super hash
+
+      unserialize_array_entities('roles', Role, hash)
+    end
   end
 end
