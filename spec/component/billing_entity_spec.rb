@@ -69,7 +69,6 @@ describe BillForward::BillingEntity do
 						new_name = 'Best'
 						profile.firstName = new_name
 						expect(profile.firstName).to eq(new_name)
-						puts @entity
 					end
 				end
 			end

@@ -51,8 +51,12 @@ module BillForward
 			get_state_param(method_id.to_s)
 		end
 
+		def to_json(*a)
+			@_state_params.to_json
+		end
+
 		def to_s
-			json_string = @_state_params.to_json
+			json_string = to_json
 			JSON.pretty_generate(JSON.parse(json_string))
 		end
 
