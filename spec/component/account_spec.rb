@@ -25,7 +25,7 @@ describe BillForward::Account do
         account_id = '74DA7D63-EAEB-431B-9745-76F9109FD842'
 
 				response = double
-		    allow(response).to receive(:to_str).and_return(canned_account)
+		    allow(response).to receive(:to_str).and_return(canned_account_get)
 		    allow(RestClient).to receive(:get).and_return(response)
 
 		    account = BillForward::Account.get_by_id account_id
@@ -34,6 +34,19 @@ describe BillForward::Account do
 			end
 		end
 	end
+  describe '::create' do
+    context 'upon creating minimal account' do
+      let(:RestClient)      { double :RestClient }
+      it "can get property" do
+        response = double
+        allow(response).to receive(:to_str).and_return(canned_account_create_minimal)
+        allow(RestClient).to receive(:post).and_return(response)
+
+        created_account = BillForward::Account.create
+        expect(created_account['@type']).to eq(BillForward::Account.resource_path.entity_name)
+      end
+    end
+  end
 end
 
 def canned_noresults
@@ -43,7 +56,32 @@ def canned_noresults
 }'
 end
 
-def canned_account()
+def canned_account_create_minimal
+'{
+  "results": [
+    {
+      "updated": "2014-09-18T18:27:22.258Z",
+      "changedBy": "7872F2F4-ED96-4038-BC82-39F7DDFECE60",
+      "id": "904DAE81-B63C-4F25-86C5-E1A1CDCEEB88",
+      "@type": "account",
+      "deleted": false,
+      "successfulSubscriptions": 0,
+      "organizationID": "F60667D7-583A-4A01-B4DC-F74CC45ACAE3",
+      "crmID": null,
+      "paymentMethods": [
+
+      ],
+      "created": "2014-09-18T18:27:22.258Z",
+      "roles": [
+
+      ]
+    }
+  ],
+  "executionTime": 492653
+}'
+end
+
+def canned_account_get
 '{
   "executionTime": 1070093,
   "results": [

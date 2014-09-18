@@ -5,31 +5,37 @@ describe BillForward::BillingEntity do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
 	end
-	describe '[key]' do
+	before :each do
+  		# skip OAuth request
+		allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
+	end
+	context 'upon getting entity' do
 		before :each do
-      		# skip OAuth request
-			allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
-		end
-		context 'upon getting entity' do
-			before :each do
-				response = double
-			    allow(response).to receive(:to_str).and_return(canned_entity)
-			    allow(RestClient).to receive(:get).and_return(response)
+			response = double
+		    allow(response).to receive(:to_str).and_return(canned_entity)
+		    allow(RestClient).to receive(:get).and_return(response)
 
-			    @entity = BillForward::Account.get_by_id 'anything'
-			end
+		    @entity = BillForward::Account.get_by_id 'anything'
+		end
+		subject (:entity) { @entity }
+		context 'using dot syntax' do
 			it "can get property" do
-				expect(@entity.id).to eq('74DA7D63-EAEB-431B-9745-76F9109FD842')
+				expect(entity.id).to eq('74DA7D63-EAEB-431B-9745-76F9109FD842')
 			end
 			it "can change property" do
 				newid = 'whatever'
-				@entity.idd = newid
-				expect(@entity.idd).to eq(newid)
+				entity.id = newid
+				expect(entity.id).to eq(newid)
+			end
+			it "can add property" do
+				value = 'whatever'
+				entity.fun = value
+				expect(entity.fun).to eq(value)
 			end
 			describe 'nested array of entities' do
 				context 'once unserialized' do
 					subject :roles do
-						roles = @entity.roles
+						roles = entity.roles
 					end
 					subject :role do
 						roles.first
@@ -56,7 +62,7 @@ describe BillForward::BillingEntity do
 			describe 'nested entity' do
 				context 'once unserialized' do
 					subject :profile do
-						profile = @entity.profile
+						profile = entity.profile
 					end
 					it 'is an entity' do
 						expect(profile.class).to eq(BillForward::Profile)
@@ -71,6 +77,16 @@ describe BillForward::BillingEntity do
 						expect(profile.firstName).to eq(new_name)
 					end
 				end
+			end
+		end
+		context 'using array access syntax' do
+			it "can get property" do
+				expect(entity['@type']).to eq('account')
+			end
+			it "can change property" do
+				newid = 'notever'
+				entity['id'] = newid
+				expect(entity['id']).to eq(newid)
 			end
 		end
 	end

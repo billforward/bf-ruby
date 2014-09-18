@@ -221,6 +221,8 @@ module BillForward
     end
 
     def post(url, data = nil)
+      TypeCheck.verifyObj(Hash, data, 'data')
+
       log "posting #{url}"
       log JSON.pretty_generate(data) if (not data.nil?) and @environment == "development"
 
@@ -236,9 +238,11 @@ module BillForward
                                    :accept => :json,
                                    :Authorization => "Bearer #{token}")
 
-        log "response: #{response.to_str}"
+        parsed = JSON.parse(response.to_str)
+        pretty = JSON.pretty_generate(parsed)
+        log "response: #{pretty}"
 
-        return JSON.parse(response.to_str)
+        return parsed
       rescue => e
         if e.respond_to? "response"
           raise ClientException.new "BillForward API call failed", e.response.to_str
@@ -249,6 +253,8 @@ module BillForward
     end
 
     def post!(url, data = nil)
+      TypeCheck.verifyObj(Hash, data, 'data')
+
       log "posting #{url}"
       log JSON.pretty_generate(data) if (not data.nil?) and @environment == "development"
 

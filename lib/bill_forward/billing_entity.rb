@@ -33,7 +33,13 @@ module BillForward
 
 				raise ArgumentError.new("id cannot be nil") if id.nil?
 
-				self.new(client.get_first("accounts/#{id}"), client)
+				route = resource_path.path
+				endpoint = ''
+				url_full = "#{route}/#{endpoint}#{id}"
+
+				response = client.get_first(url_full)
+
+				self.new(response, client)
 			end
 
 			def singleton_client
@@ -51,8 +57,22 @@ module BillForward
 			get_state_param(method_id.to_s)
 		end
 
+		def [](key)
+			method_missing(key)
+		end
+
+		def []=(key, value)
+			set_key = key.to_s+'='
+			method_missing(set_key, value)
+		end
+
 		def to_json(*a)
 			@_state_params.to_json
+		end
+
+		def to_hash(*a)
+			json_string = to_json
+			JSON.parse(to_s)
 		end
 
 		def to_s
