@@ -46,6 +46,32 @@ describe BillForward::Account do
         expect(created_account['@type']).to eq(BillForward::Account.resource_path.entity_name)
       end
     end
+    context 'upon creating account with profile' do
+      let(:RestClient)      { double :RestClient }
+      email = 'always@testing.is.moe'
+      before :each do
+        profile = BillForward::Profile.new({
+          'email' => email,
+            'firstName' => 'Test',
+          })
+        account = BillForward::Account.new({
+          'profile' => profile
+          })
+        response = double
+        allow(response).to receive(:to_str).and_return(canned_account_create_with_profile)
+        allow(RestClient).to receive(:post).and_return(response)
+
+        @created_account = BillForward::Account.create account
+      end
+      subject (:account) { @created_account }
+      it "can get property" do
+        expect(account['@type']).to eq(BillForward::Account.resource_path.entity_name)
+      end
+      it "has profile" do
+        profile = account.get_profile
+        expect(profile.email).to eq(email)
+      end
+    end
   end
 end
 
@@ -53,6 +79,44 @@ def canned_noresults
 '{
   "executionTime": 1070093,
   "results": []
+}'
+end
+
+def canned_account_create_with_profile
+'{
+  "results": [
+    {
+      "profile": {
+        "accountID": "5037E4EF-9DD1-4BC3-8920-425D9159C41A",
+        "updated": "2014-09-18T22:29:15.079Z",
+        "email": "always@testing.is.moe",
+        "organizationID": "F60667D7-583A-4A01-B4DC-F74CC45ACAE3",
+        "id": "C7A63931-709D-4F1A-B8F9-B5EC0E6C2D29",
+        "created": "2014-09-18T22:29:15.079Z",
+        "addresses": [
+
+        ],
+        "firstName": "Test",
+        "changedBy": "7872F2F4-ED96-4038-BC82-39F7DDFECE60"
+      },
+      "updated": "2014-09-18T22:29:14.783Z",
+      "deleted": false,
+      "organizationID": "F60667D7-583A-4A01-B4DC-F74CC45ACAE3",
+      "id": "5037E4EF-9DD1-4BC3-8920-425D9159C41A",
+      "crmID": null,
+      "created": "2014-09-18T22:29:14.783Z",
+      "roles": [
+
+      ],
+      "paymentMethods": [
+
+      ],
+      "successfulSubscriptions": 0,
+      "changedBy": "7872F2F4-ED96-4038-BC82-39F7DDFECE60",
+      "@type": "account"
+    }
+  ],
+  "executionTime": 647946
 }'
 end
 

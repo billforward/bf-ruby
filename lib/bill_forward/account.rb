@@ -5,6 +5,10 @@ module BillForward
     def get_roles
       roles
     end
+
+    def get_profile
+      profile
+    end
   protected
     def unserialize_all(hash)
       super hash

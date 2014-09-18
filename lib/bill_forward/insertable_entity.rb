@@ -3,7 +3,7 @@ module BillForward
 		class << self
 			def create(entity = nil)
 				entity = self.new if entity.nil?
-				TypeCheck.verifyObj(InsertableEntity, entity, 'entity')
+				TypeCheck.verifyObj(self, entity, 'entity')
 
 				serial = entity.to_hash
 				client = entity._client
@@ -15,10 +15,6 @@ module BillForward
 				response = client.post_first(url_full, serial)
 
 				self.new(response, client)
-			end
-		protected
-			def make_entity_from_response_static
-
 			end
 		end
 	end

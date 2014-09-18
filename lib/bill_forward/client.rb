@@ -240,7 +240,7 @@ module BillForward
 
         parsed = JSON.parse(response.to_str)
         pretty = JSON.pretty_generate(parsed)
-        log "response: #{pretty}"
+        log "response: \n#{pretty}"
 
         return parsed
       rescue => e

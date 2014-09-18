@@ -144,14 +144,28 @@ module BillForward
 			entity_array
 		end
 
-		def build_entity(entity_class, hash)
-			# eventually we will allow you to pass an entity into here, rather than just hash
-			TypeCheck.verifyObj(Hash, hash, 'hash')
+		def build_entity(entity_class, entity)
+			if entity.is_a? Hash
+				# either we are given a serialized entity
+				# we must unserialize it
 
-			# this entity should the same client as we do
-			client = @_client
+				# this entity should the same client as we do
+				client = @_client
 
-			new_entity = entity_class.new(hash, client)
+				new_entity = entity_class.new(entity, client)
+			elsif entity.is_a? entity_class
+				# or we are given an already-constructed entity
+				# just return it as-is
+
+				# for consistency we might want to set this entity to use the same client as us. Let's not for now.
+				new_entity = entity
+			else
+				expectedClassName = entity_class.name
+				actualClassName = entity.class.name
+				raise TypeError.new("Expected instance of either: 'Hash' or '#{expectedClassName}' at argument 'entity'. "+
+					"Instead received: '#{actualClassName}'")
+			end
+
 			new_entity
 		end
 	end
