@@ -17,5 +17,26 @@ module BillForward
 			updated_entity = self.class.new(response, client)
 			updated_entity
 		end
+
+		# Asks API to retire existing instance of this entity.
+		# @note Many BillForward entities do not support RETIRE
+		# @note As-yet untested
+	    # 
+	    # @return [self] The retired Entity
+		def delete()
+			serial = to_hash
+			client = _client
+
+			id = serial.id
+
+			route = self.class.resource_path.path
+			endpoint = ''
+			url_full = "#{route}/#{endpoint}#{id}"
+
+			response = client.retire_first(url_full)
+
+			retired_entity = self.class.new(response, client)
+			retired_entity
+		end
 	end
 end

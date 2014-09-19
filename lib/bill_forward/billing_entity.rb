@@ -27,7 +27,7 @@ module BillForward
 		class << self
 			attr_accessor :resource_path
 
-			def get_by_id(id, customClient = nil)
+			def get_by_id(id, query_params = nil, customClient = nil)
 				client = customClient
 				client = singleton_client if client.nil?
 
@@ -39,7 +39,29 @@ module BillForward
 
 				response = client.get_first(url_full)
 
+				# maybe use build_entity here for consistency
 				self.new(response, client)
+			end
+
+			def get_all(query_params = nil, customClient = nil)
+				client = customClient
+				client = singleton_client if client.nil?
+
+				route = resource_path.path
+				endpoint = ''
+				url_full = "#{route}/#{endpoint}"
+
+				response = client.get(url_full)
+				results = response["results"]
+
+				# maybe use build_entity_array here for consistency
+				entity_array = Array.new
+				# maybe it's an empty array, but that's okay too.
+				results.each do |value|
+					entity = self.new(value, client)
+					entity_array.push(entity)
+				end
+				entity_array
 			end
 
 			def singleton_client

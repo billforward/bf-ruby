@@ -16,6 +16,12 @@ describe BillForward::Account do
 			it "can get property" do
 				expect(account['@type']).to eq(BillForward::Account.resource_path.entity_name)
 			end
+			it "can be retired" do
+				expect(account.deleted).to eq(false)
+
+				retired_account = account.delete
+				expect(retired_account.deleted).to eq(true)
+			end
 		end
 		context 'upon creating account with profile' do
 			describe 'the created account' do

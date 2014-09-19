@@ -14,4 +14,12 @@ describe BillForward::Account do
 			end
 		end
 	end
+	describe '::get_all' do
+		it "should find accounts" do
+			accounts = BillForward::Account.get_all
+			accounts_first = accounts.first
+
+			expect(accounts_first['@type']).to eq(BillForward::Account.resource_path.entity_name)
+		end
+	end
 end
