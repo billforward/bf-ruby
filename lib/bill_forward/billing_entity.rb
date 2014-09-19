@@ -27,11 +27,12 @@ module BillForward
 		class << self
 			attr_accessor :resource_path
 
-			def get_by_id(id, query_params = nil, customClient = nil)
+			def get_by_id(id, query_params = {}, customClient = nil)
 				client = customClient
 				client = singleton_client if client.nil?
 
 				raise ArgumentError.new("id cannot be nil") if id.nil?
+				TypeCheck.verifyObj(Hash, query_params, 'query_params')
 
 				route = resource_path.path
 				endpoint = ''
@@ -43,9 +44,11 @@ module BillForward
 				self.new(response, client)
 			end
 
-			def get_all(query_params = nil, customClient = nil)
+			def get_all(query_params = {}, customClient = nil)
 				client = customClient
 				client = singleton_client if client.nil?
+				
+				TypeCheck.verifyObj(Hash, query_params, 'query_params')
 
 				route = resource_path.path
 				endpoint = ''
