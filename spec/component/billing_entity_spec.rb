@@ -13,7 +13,7 @@ describe BillForward::BillingEntity do
 		before :each do
 			response = double
 		    allow(response).to receive(:to_str).and_return(canned_entity)
-		    allow(RestClient).to receive(:get).and_return(response)
+		    allow(RestClient::Request).to receive(:execute).and_return(response)
 
 		    @entity = BillForward::Account.get_by_id 'anything'
 		end

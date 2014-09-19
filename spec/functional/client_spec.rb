@@ -4,12 +4,13 @@ describe BillForward::Client do
 	describe '#new' do
 		before :all do
 			@client = BillForwardTest::TEST_CLIENT
+			BillForward::Client.default_client = @client
 		end
-		# it "should find empty results upon looking up non-existent ID" do
-		# 	account_id = "nonexist"
+		it "should find empty results upon looking up non-existent ID" do
+			account_id = "nonexist"
 
-		# 	expect{@client.get_first "accounts/#{account_id}"}.to raise_error(IndexError)
-		# end
+			expect{BillForward::Account.get_by_id account_id}.to raise_error(IndexError)
+		end
 		it "should raise upon bad token" do
 			host=@client.host
 			environment=@client.environment

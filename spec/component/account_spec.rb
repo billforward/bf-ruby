@@ -5,17 +5,17 @@ describe BillForward::Account do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
 	end
+  before :each do
+    # skip OAuth request
+    allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
+  end
 	describe '::get_by_id' do
-		before :each do
-      # skip OAuth request
-			allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
-		end
 		context 'where account does not exist' do
 			let(:RestClient)      { double :RestClient }
 			it "gets empty list" do
 				response = double
 		    allow(response).to receive(:to_str).and_return(canned_noresults)
-		    allow(RestClient).to receive(:get).and_return(response)
+		    allow(RestClient::Request).to receive(:execute).and_return(response)
 
 				expect{BillForward::Account.get_by_id 'anything'}.to raise_error(IndexError)
 			end
@@ -26,7 +26,7 @@ describe BillForward::Account do
 
 				response = double
 		    allow(response).to receive(:to_str).and_return(canned_account_get)
-		    allow(RestClient).to receive(:get).and_return(response)
+		    allow(RestClient::Request).to receive(:execute).and_return(response)
 
 		    account = BillForward::Account.get_by_id account_id
 
@@ -40,7 +40,7 @@ describe BillForward::Account do
       it "can get property" do
         response = double
         allow(response).to receive(:to_str).and_return(canned_account_create_minimal)
-        allow(RestClient).to receive(:post).and_return(response)
+        allow(RestClient::Request).to receive(:execute).and_return(response)
 
         created_account = BillForward::Account.create
         expect(created_account['@type']).to eq(BillForward::Account.resource_path.entity_name)
@@ -59,7 +59,7 @@ describe BillForward::Account do
           })
         response = double
         allow(response).to receive(:to_str).and_return(canned_account_create_with_profile)
-        allow(RestClient).to receive(:post).and_return(response)
+        allow(RestClient::Request).to receive(:execute).and_return(response)
 
         @created_account = BillForward::Account.create account
       end
