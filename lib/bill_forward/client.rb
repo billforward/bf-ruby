@@ -15,10 +15,15 @@ module BillForward
         self.response = nil
       end
     end
-
   end
 
   class ClientInstantiationException < Exception
+  end
+
+  class ApiError < Exception
+  end
+
+  class ApiAuthorizationError < ApiError
   end
 
   class ApiTokenException < ClientException
@@ -165,33 +170,142 @@ module BillForward
       response["results"][0]
     end
 
-    def get(url)
-      log "getting #{url}"
+    def request(method, url, params={}, payload=nil)
+      full_url = "#{@host}#{url}"
+
+      # Make params into query parameters
+      full_url += "#{URI.parse(url).query ? '&' : '?'}#{uri_encode(params)}" if params && params.any?
       token = get_token
 
+      options={
+        :headers => make_headers(get_token),
+        :method => method,
+        :payload => payload,
+        :url => full_url,
+        :accept => :json
+      }
+
+      log "getting #{url}"
       log "token: #{token}"
-      return nil if token.nil?
 
       begin
-        #RestClient.proxy = "http://127.0.0.1:8888"
-        response = RestClient.get("#{@host}#{url}",
-                                  {
-                                      :Authorization => "Bearer #{token}"
-                                  })
-
-        #log "response: "+response.to_str
-        #log JSON.pretty_generate(JSON.parse(response.to_str))
-        #log response.to_str
-
-        return JSON.parse(response.to_str)
-      rescue => e
-        log e
-        if e.respond_to? "response"
-          raise ClientException.new "BillForward API call failed", e.response.to_str
+        response = execute_request(options)
+      rescue SocketError => e
+        handle_restclient_error(e)
+      rescue NoMethodError => e
+        # Work around RestClient bug
+        if e.message =~ /\WRequestFailed\W/
+          e = APIConnectionError.new('Unexpected HTTP response code')
+          handle_restclient_error(e)
         else
-          raise ClientException.new "BillForward API call failed"
+          raise
         end
+      rescue RestClient::ExceptionWithResponse => e
+        if rcode = e.http_code and rbody = e.http_body
+          handle_api_error(rcode, rbody)
+        else
+          handle_restclient_error(e)
+        end
+      rescue RestClient::Exception, Errno::ECONNREFUSED => e
+        handle_restclient_error(e)
       end
+    end
+
+    def handle_restclient_error(e)
+      connection_message = "Please check your internet connection and try again. "
+
+      case e
+      when RestClient::RequestTimeout
+        message = "Could not connect to BillForward (#{@host}). #{connection_message}"
+      when RestClient::ServerBrokeConnection
+        message = "The connection to the server (#{@host}) broke before the " \
+          "request completed. #{connection_message}"
+      when SocketError
+        message = "Unexpected error communicating when trying to connect to BillForward. " \
+          "Please confirm that (#{@host}) is a BillForward API URL. "
+      else
+        message = "Unexpected error communicating with BillForward. "
+      end
+
+      raise ClientException.new(message + "\n\n(Network error: #{e.message})")
+    end
+
+    def handle_api_error(rcode, rbody)
+      begin
+        # Example error JSON:
+        # {
+        #    "errorType" : "ValidationError",
+        #    "errorMessage" : "Validation Error - Entity: Subscription Field: type Value: null Message: may not be null\nValidation Error - Entity: Subscription Field: productID Value: null Message: may not be null\nValidation Error - Entity: Subscription Field: name Value: null Message: may not be null\n",
+        #    "errorParameters" : [ "type", "productID", "name" ]
+        # }
+        error_obj = JSON.parse(rbody)
+        error = error_obj[:error]
+
+        errorType = error[:errorType]
+        errorMessage = error[:errorMessage]
+        errorParameters = error[:errorParameters]
+
+        raise_message = "====\n#{rcode} API Error.\nType: #{errorType}\nMessage: #{errorMessage}\nParameters: #{errorParameters}\n===="
+        raise ApiError.new raise_message
+
+      rescue JSON::ParserError
+        begin
+          # Maybe it's XML then; it could look like this:
+          # <?xml version="1.0" encoding="UTF-8"?>
+          # <error>
+          #    <errorType>Oauth</errorType>
+          #    <errorMessage>error="invalid_token", error_description="Invalid access token: 046898af-fa7a-4394-8a52-7dae28668b08"</errorMessage>
+          # </error>
+          xml = Nokogiri::XML(rbody)
+
+          type = xml.at_xpath("//error//errorType").content
+          message = xml.at_xpath("//error//errorMessage").content
+
+          split = message.split(', ')
+
+          error = split.first.split('=').last
+          description = split.last.split('=').last
+
+          raise_message = "====\n#{rcode} Authorization failed.\nType: #{type}\nError: #{error}\nDescription: #{description}\n===="
+
+          raise ApiAuthorizationError.new raise_message
+        rescue Nokogiri::SyntaxError
+          raise_message = "====\n#{rcode} API Error.\n Response body: #{rbody}\n===="
+          raise ApiError.new raise_message
+        end  
+      end
+
+      raise_message = "====\n#{rcode} API Error.\n Response body: #{rbody}\n===="
+      raise ApiError.new raise_message
+    end
+
+    def make_headers(token)
+      {
+          :Authorization => "Bearer #{token}"
+      }
+    end
+
+    def execute_request(options)
+      # RestClient.proxy = "http://127.0.0.1:8888"
+      RestClient::Request.execute(options)
+    end
+
+    def get(url, params={})
+      response = request('get', url, params, nil)
+
+      #log "response: "+response.to_str
+      #log JSON.pretty_generate(JSON.parse(response.to_str))
+      #log response.to_str
+
+      return JSON.parse(response.to_str)
+    # rescue => e
+    #   log e
+    #   if e.respond_to? "response"
+    #     raise ClientException.new "BillForward API call failed", e.response.to_str
+    #   else
+    #     raise ClientException.new "BillForward API call failed"
+    #   end
+    # end
     end
 
     def retire(url)
