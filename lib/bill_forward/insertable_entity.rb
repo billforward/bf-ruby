@@ -1,6 +1,11 @@
 module BillForward
 	class InsertableEntity < BillingEntity
 		class << self
+			# Asks API to create a real instance of specified entity,
+	 		# based on provided model.
+		    # @param options=nil [self] the Entity to create
+		    # 
+		    # @return [self] The created Entity
 			def create(entity = nil)
 				entity = self.new if entity.nil?
 				TypeCheck.verifyObj(self, entity, 'entity')
@@ -14,7 +19,8 @@ module BillForward
 
 				response = client.post_first(url_full, serial)
 
-				self.new(response, client)
+				created_entity = self.new(response, client)
+				created_entity
 			end
 		end
 	end
