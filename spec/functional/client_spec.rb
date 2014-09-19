@@ -1,6 +1,6 @@
 require File.join(File.expand_path(File.dirname(__FILE__)), "..", "spec_helper")
 
-describe BillForward::Client
+describe BillForward::Client do
 	describe '#new' do
 		before :all do
 			@client = BillForwardTest::TEST_CLIENT
