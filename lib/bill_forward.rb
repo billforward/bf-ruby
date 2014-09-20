@@ -2,7 +2,6 @@
 
 require "rest-client"
 require "json"
-require "nokogiri"
 # used for things like 'blank?' and 'indifferent hashes'
 require 'active_support/core_ext/hash/indifferent_access'
 require 'active_support/core_ext/string'

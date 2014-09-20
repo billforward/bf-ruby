@@ -143,16 +143,17 @@ module BillForward
     end
 
     def execute_request(method, url, token, payload=nil)
+      # Enable Fiddler:
       # RestClient.proxy = "http://127.0.0.1:8888"
       # content_type seems to be broken on generic execute.
       # darn.
       # RestClient::Request.execute(options)
       options = {
-        :Authorization => "Bearer #{token}"
+        :Authorization => "Bearer #{token}",
+        :accept => 'application/json'
       }
       if (method == 'post' || method == 'put')
-        options.update(:content_type => 'application/json',
-          :accept => 'application/json'
+        options.update(:content_type => 'application/json'
         )
       end
 
@@ -272,36 +273,21 @@ module BillForward
             errorParameters = error['errorParameters']
             raise_message = "\n====\n#{rcode} API Error.\nType: #{errorType}\nMessage: #{errorMessage}\nParameters: #{errorParameters}\n====\n"  
           else
-            raise_message = "\n====\n#{rcode} API Error.\nType: #{errorType}\nMessage: #{errorMessage}\n====\n"  
+            if (errorType == 'Oauth')
+              split = errorMessage.split(', ')
+
+              error = split.first.split('=').last
+              description = split.last.split('=').last
+
+              raise_message = "\n====\n#{rcode} Authorization failed.\nType: #{type}\nError: #{error}\nDescription: #{description}\n====\n"
+
+              raise ApiAuthorizationError.new raise_message
+            else
+              raise_message = "\n====\n#{rcode} API Error.\nType: #{errorType}\nMessage: #{errorMessage}\n====\n"  
+            end
           end
           
           raise ApiError.new raise_message
-
-        rescue JSON::ParserError
-          begin
-            # Maybe it's XML then; it could look like this:
-            # <?xml version="1.0" encoding="UTF-8"?>
-            # <error>
-            #    <errorType>Oauth</errorType>
-            #    <errorMessage>error="invalid_token", error_description="Invalid access token: 046898af-fa7a-4394-8a52-7dae28668b08"</errorMessage>
-            # </error>
-            xml = Nokogiri::XML(rbody)
-
-            type = xml.at_xpath("//error//errorType").content
-            message = xml.at_xpath("//error//errorMessage").content
-
-            split = message.split(', ')
-
-            error = split.first.split('=').last
-            description = split.last.split('=').last
-
-            raise_message = "\n====\n#{rcode} Authorization failed.\nType: #{type}\nError: #{error}\nDescription: #{description}\n====\n"
-
-            raise ApiAuthorizationError.new raise_message
-          rescue Nokogiri::SyntaxError
-            raise_message = "\n====\n#{rcode} API Error.\n Response body: #{rbody}\n====\n"
-            raise ApiError.new raise_message
-          end  
         end
 
         raise_message = "\n====\n#{rcode} API Error.\n Response body: #{rbody}\n====\n"
