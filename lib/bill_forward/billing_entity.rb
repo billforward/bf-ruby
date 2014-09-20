@@ -1,7 +1,7 @@
 module BillForward
 	class BillingEntity
 		# legacy Ruby gives us this 'id' chuff. we kinda need it back.
-		undef id unless defined? id
+		undef id if defined? id
 		attr_accessor :_client
 
 		def initialize(state_params = nil, client = nil)
@@ -19,7 +19,7 @@ module BillForward
 			# use indifferent hash so 'id' and :id are the same
 			@_state_params = HashWithIndifferentAccess.new
 			# legacy Ruby gives us this 'id' chuff. we kinda need it back.	
-			@_state_params.instance_eval { undef :id unless defined? :id }
+			@_state_params.instance_eval { undef id if defined? id }
 			# populate state params now
 			unserialize_all state_params
 		end

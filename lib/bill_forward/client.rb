@@ -142,9 +142,29 @@ module BillForward
       response["results"][0]
     end
 
-    def execute_request(options)
-      # RestClient.proxy = "http://127.0.0.1:8888"
-      RestClient::Request.execute(options)
+    def execute_request(method, url, token, payload=nil)
+      RestClient.proxy = "http://127.0.0.1:8888"
+      # content_type seems to be broken on generic execute.
+      # darn.
+      # RestClient::Request.execute(options)
+      options = {
+        :Authorization => "Bearer #{token}"
+      }
+      if (method == 'post' || method == 'put')
+        options.update(:content_type => 'application/json',
+          :accept => 'application/json'
+        )
+      end
+
+      if (method == 'post')
+        RestClient.post(url, payload, options)
+      elsif (method == 'put')
+        RestClient.put(url, payload, options)
+      elsif (method == 'get')
+        RestClient.get(url, options)
+      elsif (method == 'delete')
+        RestClient.delete(url, options)
+      end
     end
 
     def get(url, params={})
@@ -157,13 +177,13 @@ module BillForward
       request('delete', url, params, nil)
     end
 
-    def post(url, data = nil, params={})
+    def post(url, data, params={})
       TypeCheck.verifyObj(Hash, data, 'data')
       TypeCheck.verifyObj(Hash, params, 'params')
       request('post', url, params, data)
     end
 
-    def put(url, data = nil, params={})
+    def put(url, data, params={})
       TypeCheck.verifyObj(Hash, data, 'data')
       TypeCheck.verifyObj(Hash, params, 'params')
       request('put', url, params, data)
@@ -177,21 +197,18 @@ module BillForward
         full_url += "#{URI.parse(url).query ? '&' : '?'}#{uri_encode(params)}" if params && params.any?
         token = get_token
 
-        options={
-          :headers => make_headers(token),
-          :method => method,
-          :payload => payload,
-          :url => full_url,
-          :content_type => 'application/json',
-          :accept => 'application/json',
-        }
+        log payload
+
+        unless (payload.nil?)
+          payload = payload.to_json.to_s
+        end
 
         log "#{method} #{url}"
         log "token: #{token}"
         log "payload: #{payload}"
 
         begin
-          response = execute_request(options)
+          response = execute_request(method, full_url, token, payload)
 
           parsed = JSON.parse(response.to_str)
           pretty = JSON.pretty_generate(parsed)
@@ -289,12 +306,6 @@ module BillForward
 
         raise_message = "\n====\n#{rcode} API Error.\n Response body: #{rbody}\n====\n"
         raise ApiError.new raise_message
-      end
-
-      def make_headers(token)
-        {
-            :Authorization => "Bearer #{token}"
-        }
       end
 
       def log(*args)
