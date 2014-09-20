@@ -143,7 +143,7 @@ module BillForward
     end
 
     def execute_request(method, url, token, payload=nil)
-      RestClient.proxy = "http://127.0.0.1:8888"
+      # RestClient.proxy = "http://127.0.0.1:8888"
       # content_type seems to be broken on generic execute.
       # darn.
       # RestClient::Request.execute(options)
