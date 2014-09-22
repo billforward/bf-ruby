@@ -35,11 +35,10 @@ describe BillForward::Organisation do
 
 			first_org.apiConfigurations.push(new_configuration)
 
-			puts first_org
-			# updated_org = first_org.save
+			updated_org = first_org.save
 
-			# added_config = updated_org.apiConfigurations.last
-			# expect(added_config.APILoginID).to eq(@authorize_net_login_id)
+			added_config = updated_org.apiConfigurations.last
+			expect(added_config.APILoginID).to eq(@authorize_net_login_id)
 		end
 	end
 end

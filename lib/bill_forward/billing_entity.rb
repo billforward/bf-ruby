@@ -92,13 +92,27 @@ module BillForward
 		end
 
 		def to_json(*a)
-			@_state_params.to_json
+			ordered_hash = hash_with_type_at_top(@_state_params)
+			ordered_hash.to_json
+			# @_state_params.to_json
 		end
 
-		def to_hash(*a)
+		def to_unordered_hash(*a)
 			json_string = to_json
-			hash = JSON.parse(json_string)
+			JSON.parse(json_string)
+		end
 
+		def to_s
+			parsed = to_unordered_hash
+			JSON.pretty_generate(parsed)
+		end
+
+		def serialize
+			to_json
+		end
+
+	protected
+		def hash_with_type_at_top(hash)
 			# API presently requires '@type' (if present) to be first key in JSON
 			if hash.has_key? '@type'
 				new_hash = ActiveSupport::OrderedHash.new
@@ -111,18 +125,24 @@ module BillForward
 					new_hash[key] = value
 				end
 
-				return new_hash
+				hash = new_hash
 			end
+			# @_registered_entities = Hash.new
+			# @_registered_entity_arrays = Hash.new
+			# @_registered_entities.each do |key, value|
 
+			# @_registered_entity_arrays.each do |key, value|
+			# 	# locate registered array of entities, in this hash
+			# 	array = hash.with_indifferent_access[key]
+
+			# 	# all entities in this array need their @type reordered
+			# 	array.each do |value|
+			# 		value = hash_with_type_at_top(value)
+			# 	end
+			# end
 			return hash
 		end
 
-		def to_s
-			parsed = to_hash
-			JSON.pretty_generate(parsed)
-		end
-
-	protected
 		def set_state_param(key, value)
 			@_state_params[key] = value
 			get_state_param(key)

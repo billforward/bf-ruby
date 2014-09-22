@@ -5,7 +5,7 @@ module BillForward
 	    # 
 	    # @return [self] The updated Entity
 		def save()
-			serial = to_s
+			serial = serialize
 			client = _client
 
 			route = self.class.resource_path.path
@@ -24,7 +24,7 @@ module BillForward
 	    # 
 	    # @return [self] The retired Entity
 		def delete()
-			serial = to_hash
+			serial = serialize
 			client = _client
 
 			id = serial.id
