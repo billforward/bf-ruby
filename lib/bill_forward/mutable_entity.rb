@@ -5,7 +5,7 @@ module BillForward
 	    # 
 	    # @return [self] The updated Entity
 		def save()
-			serial = to_hash
+			serial = to_s
 			client = _client
 
 			route = self.class.resource_path.path

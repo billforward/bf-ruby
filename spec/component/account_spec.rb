@@ -68,7 +68,7 @@ describe BillForward::Account do
         expect(account['@type']).to eq(BillForward::Account.resource_path.entity_name)
       end
       it "has profile" do
-        profile = account.get_profile
+        profile = account.profile
         expect(profile.email).to eq(email)
       end
     end

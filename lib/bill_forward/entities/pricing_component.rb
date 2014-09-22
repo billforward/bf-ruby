@@ -1,4 +1,7 @@
 module BillForward
+  # This entity exposes the following child entities via method_missing:
+  # 
+  # PricingComponentTier[]  .tiers
   class PricingComponent < MutableEntity
     @resource_path = BillForward::ResourcePath.new("pricing-components", "PricingComponent")
 

@@ -1,4 +1,7 @@
 module BillForward
+  # This entity exposes the following child entities via method_missing:
+  # 
+  # PricingComponentValueChange[]  .pricingComponentValueChanges
   class Subscription < MutableEntity
     @resource_path = BillForward::ResourcePath.new("subscriptions", "subscription")
 
@@ -18,10 +21,10 @@ module BillForward
       self.new(response, client)
     end
 
-    # protected
-      # def unserialize_all(hash)
-      #   super hash
-      #   unserialize_entity('pricingComponentValueChanges', PricingComponentValueChange, hash)
-      # end
+    protected
+      def unserialize_all(hash)
+        super hash
+        unserialize_entity('pricingComponentValueChanges', PricingComponentValueChange, hash)
+      end
   end
 end

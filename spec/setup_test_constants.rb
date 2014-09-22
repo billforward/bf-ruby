@@ -6,14 +6,13 @@ if (File.exist?(test_constants_file))
 	require test_constants_file
 else
 	puts 'using default test constants'
-	# the following is a template for what your 'test_constants.rb' should contain.
-	# however if used in this placeholder state, functional tests will not pass.
+	# The following is a template for what your 'test_constants.rb' should contain.
+	# If used in this placeholder state, functional tests will not pass.
 	module BillForwardTest
 		BILLFORWARD_API_HOST='insert-API-URL-here'
-		# logging is enabled in 'development'. any other environment is default.
+		# enable logging of requests by setting to 'development'. any other environment is default.
 		BILLFORWARD_ENVIRONMENT="default"
-
-		BILLFORWARD_API_TOKEN="insert-access-token-here"
+		BILLFORWARD_API_TOKEN="insert-access-token-here OR leave-blank-for-OAUTH"
 
 		### alternatively:
 		# (these values are used if you leave API token blank)
@@ -22,6 +21,10 @@ else
 		BILLFORWARD_PASSWORD="insert-password"
 		BILLFORWARD_CLIENT_ID="insert-client-id"
 		BILLFORWARD_CLIENT_SECRET="insert-client-secret"
+
+		# ---- Required for Authorize.Net tests only
+		AUTHORIZE_NET_LOGIN_ID = 'FILL IN WITH AUTHORIZE NET LOGIN ID'
+		AUTHORIZE_NET_TRANSACTION_KEY = 'FILL IN WITH AUTHORIZE NET TRANSACTION KEY'
 	end
 end
 

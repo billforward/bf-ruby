@@ -41,7 +41,7 @@ describe BillForward::Account do
 					expect(account['@type']).to eq(BillForward::Account.resource_path.entity_name)
 				end
 				it "has profile" do
-					profile = account.get_profile
+					profile = account.profile
 					expect(profile.email).to eq(@email)
 				end
 				context 'after creation' do
@@ -62,7 +62,7 @@ describe BillForward::Account do
 						expect(updated_account.deleted).to eq(true)
 					end
 					describe "profile" do
-						subject (:profile) { account.get_profile }
+						subject (:profile) { account.profile }
 						it 'has expected properties' do
 							expect(profile.email).to eq(@email)
 						end

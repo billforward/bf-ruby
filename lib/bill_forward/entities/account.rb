@@ -1,14 +1,12 @@
 module BillForward
+  # This entity exposes the following child entities via method_missing:
+  # 
+  # Role[]           .roles
+  # PaymentMethod[]  .paymentMethods
+  # Profile          .profile
   class Account < MutableEntity
   	@resource_path = BillForward::ResourcePath.new("accounts", "account")
 
-    def get_roles
-      roles
-    end
-
-    def get_profile
-      profile
-    end
   protected
     def unserialize_all(hash)
       super hash

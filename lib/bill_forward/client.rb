@@ -21,6 +21,13 @@ module BillForward
   end
 
   class ApiError < Exception
+    attr_reader :json
+    attr_reader :raw
+
+    def initialize(json, raw)
+      @json = json
+      @raw = raw
+    end
   end
 
   class ApiAuthorizationError < ApiError
@@ -144,7 +151,8 @@ module BillForward
 
     def execute_request(method, url, token, payload=nil)
       # Enable Fiddler:
-      # RestClient.proxy = "http://127.0.0.1:8888"
+      RestClient.proxy = "http://127.0.0.1:8888"
+      
       # content_type seems to be broken on generic execute.
       # darn.
       # RestClient::Request.execute(options)
@@ -179,13 +187,13 @@ module BillForward
     end
 
     def post(url, data, params={})
-      TypeCheck.verifyObj(Hash, data, 'data')
+      TypeCheck.verifyObj(String, data, 'data')
       TypeCheck.verifyObj(Hash, params, 'params')
       request('post', url, params, data)
     end
 
     def put(url, data, params={})
-      TypeCheck.verifyObj(Hash, data, 'data')
+      TypeCheck.verifyObj(String, data, 'data')
       TypeCheck.verifyObj(Hash, params, 'params')
       request('put', url, params, data)
     end
@@ -198,15 +206,8 @@ module BillForward
         full_url += "#{URI.parse(url).query ? '&' : '?'}#{uri_encode(params)}" if params && params.any?
         token = get_token
 
-        log payload
-
-        unless (payload.nil?)
-          payload = payload.to_json.to_s
-        end
-
         log "#{method} #{url}"
         log "token: #{token}"
-        log "payload: #{payload}"
 
         begin
           response = execute_request(method, full_url, token, payload)
@@ -281,17 +282,17 @@ module BillForward
 
               raise_message = "\n====\n#{rcode} Authorization failed.\nType: #{type}\nError: #{error}\nDescription: #{description}\n====\n"
 
-              raise ApiAuthorizationError.new raise_message
+              raise ApiAuthorizationError.new(error, rbody), raise_message
             else
               raise_message = "\n====\n#{rcode} API Error.\nType: #{errorType}\nMessage: #{errorMessage}\n====\n"  
             end
           end
           
-          raise ApiError.new raise_message
+          raise ApiError.new(error, rbody), raise_message
         end
 
         raise_message = "\n====\n#{rcode} API Error.\n Response body: #{rbody}\n====\n"
-        raise ApiError.new raise_message
+        raise ApiError.new(nil, rbody), raise_message
       end
 
       def log(*args)

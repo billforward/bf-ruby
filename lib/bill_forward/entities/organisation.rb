@@ -1,4 +1,7 @@
 module BillForward
+  # This entity exposes the following child entities via method_missing:
+  # 
+  # APIConfiguration[]  .apiConfigurations
   class Organisation < MutableEntity
   	@resource_path = BillForward::ResourcePath.new("organizations", "organization")
 
@@ -24,5 +27,11 @@ module BillForward
 			entity_array
   		end
   	end
+
+  protected
+    def unserialize_all(hash)
+      super hash
+      unserialize_array_of_entities('apiConfigurations', APIConfiguration, hash)
+    end
   end
 end

@@ -97,12 +97,29 @@ module BillForward
 
 		def to_hash(*a)
 			json_string = to_json
-			JSON.parse(to_s)
+			hash = JSON.parse(json_string)
+
+			# API presently requires '@type' (if present) to be first key in JSON
+			if hash.has_key? '@type'
+				new_hash = ActiveSupport::OrderedHash.new
+				# insert existing @type as first element in ordered hash
+				new_hash['@type'] = hash.with_indifferent_access['@type']
+
+				# add key-value pairs excepting '@type' back in
+				# no, we don't care about the order of these.
+				hash.with_indifferent_access.reject {|key, value| key == '@type'}.each do |key, value|
+					new_hash[key] = value
+				end
+
+				return new_hash
+			end
+
+			return hash
 		end
 
 		def to_s
-			json_string = to_json
-			JSON.pretty_generate(JSON.parse(json_string))
+			parsed = to_hash
+			JSON.pretty_generate(parsed)
 		end
 
 	protected

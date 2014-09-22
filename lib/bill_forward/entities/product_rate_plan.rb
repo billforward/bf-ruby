@@ -1,18 +1,11 @@
 module BillForward
+  # This entity exposes the following child entities via method_missing:
+  # 
+  # Product             .product
+  # TaxationLink[]      .taxation
+  # PricingComponent[]  .pricingComponents
   class ProductRatePlan < MutableEntity
     @resource_path = BillForward::ResourcePath.new("product-rate-plans", "productRatePlan")
-
-    def get_product
-      product
-    end
-
-    def get_taxation_links
-      taxation
-    end
-
-    def get_pricing_components
-      pricingComponents
-    end
 
     protected
       def unserialize_all(hash)
