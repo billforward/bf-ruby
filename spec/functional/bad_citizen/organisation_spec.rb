@@ -14,27 +14,22 @@ describe BillForward::Organisation do
 			organisations = BillForward::Organisation.get_mine
 			first_org = organisations.first
 
-			configs = first_org.apiConfigurations
 
-			## remove all existing AuthorizeNetConfigurations (if any)
-			## Wait, actually this is a bad idea, since some payment method might be using them..
-			# filtered = configs.reject do |config|
-			# 	config['@type'] == 'AuthorizeNetConfiguration'
-			# end
+			# remove all existing AuthorizeNetConfigurations (if any)
+			filtered = first_org.apiConfigurations.reject do |config|
+				config['@type'] == 'AuthorizeNetConfiguration'
+			end
 
-			# first_org.api_configurations = filtered
+			first_org.apiConfigurations = filtered
 
 
 			#add a new AuthorizeNetConfiguration
-			new_configuration = BillForward::APIConfiguration.new({
+			first_org.apiConfigurations.push BillForward::APIConfiguration.new({
 				 "@type" =>          "AuthorizeNetConfiguration",
 			     "APILoginID" =>     @authorize_net_login_id,
 			     "transactionKey" => @authorize_net_transaction_key,
 			     "environment" =>    "Sandbox"
 				})
-
-			first_org.apiConfigurations.push(new_configuration)
-
 			updated_org = first_org.save
 
 			added_config = updated_org.apiConfigurations.last
