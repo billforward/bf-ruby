@@ -13,9 +13,9 @@ gem 'bill_forward', :git => 'git@github.com:billforward/bf-ruby.git', :branch =>
 Or install this source as a local gem using:
 
 ```bash
-    bundle
-    gem build bill_forward.gemspec
-    gem install bill_forward
+bundle
+gem build bill_forward.gemspec
+gem install bill_forward
 ```
 
 ## Usage
