@@ -127,3 +127,67 @@ gotten_account.profile.email = 'sometimes@testing.is.moe'
 updated_account = gotten_account.save() # or: gotten_account.profile.save()
 puts updated_account
 ```
+
+## Development
+### Building
+Clone the source, then run `bundle`.
+```bash
+bundle
+```
+If ever you add a new dependency, you will need to run this again.
+
+To install the gem, run:
+```ruby
+gem build bill_forward.gemspec
+gem install bill_forward
+```
+
+### Running tests
+Development is decidedly test-driven.
+
+We use RSpec for testing.
+
+Run offline tests with:
+```bash
+rake
+```
+
+If you wish to run online tests also, you will need to declare some test constants. Create a file `test_constants.rb` in the directory `spec/`, containing the following declarations:
+
+```ruby
+module BillForwardTest
+	BILLFORWARD_API_HOST='insert-API-URL-here'
+	BILLFORWARD_API_TOKEN="insert-access-token-here OR leave-blank-for-OAUTH"
+
+	### alternatively:
+	# (these values are used if you leave API token blank)
+	# authenticate using OAUTH:
+	BILLFORWARD_USERNAME="insert-username"
+	BILLFORWARD_PASSWORD="insert-password"
+	BILLFORWARD_CLIENT_ID="insert-client-id"
+	BILLFORWARD_CLIENT_SECRET="insert-client-secret"
+
+
+	# ---- Enable logging if you want (shows request and response bodies)
+	USE_LOGGING=false
+
+
+	# ---- Required for Authorize.Net gateway tests only
+	AUTHORIZE_NET_LOGIN_ID = 'FILL IN WITH AUTHORIZE NET LOGIN ID'
+	AUTHORIZE_NET_TRANSACTION_KEY = 'FILL IN WITH AUTHORIZE NET TRANSACTION KEY'
+	# ---- Required for Authorize.Net tokenization tests only
+	AUTHORIZE_NET_CUSTOMER_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PROFILE ID
+	AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PAYMENT PROFILE ID
+	AUTHORIZE_NET_CARD_LAST_4_DIGITS = 1234
+
+
+	# ---- Enable proxy if you want (for example to see requests in Fiddler)
+	CLIENT_PROXY_ENABLED=false
+	CLIENT_PROXY_URL="http://127.0.0.1:8888"
+end
+```
+
+Run all tests with:
+```bash
+rake spec_all
+```
