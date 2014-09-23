@@ -27,9 +27,23 @@ describe BillForward::Account do
 			describe 'the created account' do
 				before :all do
 					@email = 'always@testing.is.moe'
+					addresses = Array.new
+					addresses.push(
+						BillForward::Address.new({
+						'addressLine1' => 'address line 1',
+					    'addressLine2' => 'address line 2',
+					    'addressLine3' => 'address line 3',
+					    'city' => 'London',
+					    'province' => 'London',
+					    'country' => 'United Kingdom',
+					    'postcode' => 'SW1 1AS',
+					    'landline' => '02000000000',
+					    'primaryAddress' => true
+						}))
 					profile = BillForward::Profile.new({
 						'email' => @email,
 	  					'firstName' => 'Test',
+						'addresses' => addresses
 						})
 					account = BillForward::Account.new({
 						'profile' => profile

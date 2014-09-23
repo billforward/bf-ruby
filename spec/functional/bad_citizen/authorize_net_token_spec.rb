@@ -5,7 +5,7 @@ describe BillForward::AuthorizeNetToken do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
 
-		# Authorize.Net credentials used to test adding a payment gateway
+		# Authorize.Net credentials used to test adding a tokenized card
 		@authorize_net_customer_profile_id = BillForwardTest::AUTHORIZE_NET_CUSTOMER_PROFILE_ID
 		@authorize_net_customer_payment_profile_id = BillForwardTest::AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID
 		@authorize_net_card_last_4_digits = BillForwardTest::AUTHORIZE_NET_CARD_LAST_4_DIGITS

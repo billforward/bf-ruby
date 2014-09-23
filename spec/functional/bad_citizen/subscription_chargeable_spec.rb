@@ -4,6 +4,15 @@ describe BillForward::Subscription do
 	before :all do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
+
+		# Authorize.Net credentials used to test adding a payment gateway
+		@authorize_net_login_id = BillForwardTest::AUTHORIZE_NET_LOGIN_ID
+		@authorize_net_transaction_key = BillForwardTest::AUTHORIZE_NET_TRANSACTION_KEY
+
+		# Authorize.Net credentials used to test adding a payment gateway
+		@authorize_net_customer_profile_id = BillForwardTest::AUTHORIZE_NET_CUSTOMER_PROFILE_ID
+		@authorize_net_customer_payment_profile_id = BillForwardTest::AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID
+		@authorize_net_card_last_4_digits = BillForwardTest::AUTHORIZE_NET_CARD_LAST_4_DIGITS
 	end
 	context 'upon creating required entities for chargeable Subscription' do
 		before :all do
@@ -29,7 +38,31 @@ describe BillForward::Subscription do
 			updated_org = first_org.save
 
 
-			# create a default account
+			# create an account
+			# requires (optionally):
+			# - profile
+			# - - addresses
+			addresses = Array.new()
+			addresses.push(
+				BillForward::Address.new({
+				'addressLine1' => 'address line 1',
+			    'addressLine2' => 'address line 2',
+			    'addressLine3' => 'address line 3',
+			    'city' => 'London',
+			    'province' => 'London',
+			    'country' => 'United Kingdom',
+			    'postcode' => 'SW1 1AS',
+			    'landline' => '02000000000',
+			    'primaryAddress' => true
+				}))
+			profile = BillForward::Profile.new({
+				'email' => 'always@testing.is.moe',
+				'firstName' => 'Test',
+				'addresses' => addresses
+				})
+			account = BillForward::Account.new({
+				'profile' => profile
+				})
 			created_account = BillForward::Account.create account
 
 
@@ -151,12 +184,70 @@ describe BillForward::Subscription do
 				'currency' => 'USD',
 				'name' => 'A sound plan',
 				'pricingComponents' => pricing_components,
-				'productID' => product.id,
+				'productID' => created_product.id,
 				})
 			created_prp = BillForward::ProductRatePlan.create(prp)
+
+
+			# create references for tests to use
+			@created_account = created_account
+			@created_prp = created_prp
+			@created_payment_method = created_payment_method
+			@updated_org = updated_org
 		end
+		subject(:account) { @created_account }
+		subject(:prp) { @created_prp }
+		subject(:payment_method) { @created_payment_method }
+		subject(:organisation) { @updated_org }
 		describe '::create' do
 			it 'creates Subscription' do
+				# make subscription..
+				# requires:
+				# - account [we have this already]
+				# - product rate plan [we have this already]
+				# - pricing component value instances (for every pricing component on the PRP)
+				# - payment method subscription links (for every payment method on the account)
+
+				# create PaymentMethodSubscriptionLink from payment method and organisation
+				payment_method_subscription_links = Array.new
+				payment_method_subscription_links.push(
+					BillForward::PaymentMethodSubscriptionLink.new({
+						'paymentMethodID' => payment_method.id,
+						'organizationID' => organisation.id,
+					}))
+
+
+				pricing_components = prp.pricingComponents
+				# get references to each pricing component we made
+				flat_pricing_component_1 = pricing_components[0]
+				tiered_pricing_component_1 = pricing_components[1]
+
+				# create PricingComponentValue instances for every PricingComponent on the PRP
+				pricing_component_values = Array.new
+				pricing_component_values.push(
+					BillForward::PricingComponentValue.new({
+						'pricingComponentID' => flat_pricing_component_1.id,
+						'value' => 1,
+					}),
+					BillForward::PricingComponentValue.new({
+						'pricingComponentID' => tiered_pricing_component_1.id,
+						'value' => 5,
+					}))
+
+
+				# create subscription
+				subscription = BillForward::Subscription.new({
+					'type' =>                           'Subscription',
+					'productRatePlanID' =>              prp.id,
+					'accountID' =>                      account.id,
+					'name' =>                           'Memorable Subscription',
+					'description' =>                    'Memorable Subscription Description',
+					'paymentMethodSubscriptionLinks' => payment_method_subscription_links,
+					'pricingComponentValues' =>         pricing_component_values
+					})
+				created_sub = BillForward::Subscription.create(subscription)
+
+				puts created_sub
 			end
 		end
 	end
