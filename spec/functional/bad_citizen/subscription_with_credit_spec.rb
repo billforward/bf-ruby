@@ -55,10 +55,10 @@ describe BillForward::Subscription do
 			created_payment_method = BillForward::PaymentMethod::create(payment_method)
 
 
-			# FINISH THIS TOMORROW
+			# issue $100 credit to our account
 			credit_note = BillForward::CreditNote.new({
-				"accountID" => account.id,
-			    "nominalValue" => 15,
+				"accountID" => created_account.id,
+			    "nominalValue" => 100,
 			    "currency" => "USD"
 				})
 			created_credit_note = BillForward::CreditNote.create(credit_note)
