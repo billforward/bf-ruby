@@ -39,7 +39,7 @@ module BillForward
 
   class Client
     attr_accessor :host
-    attr_accessor :environment
+    attr_accessor :use_logging
     attr_accessor :api_token
 
     # provide access to self statics
@@ -76,8 +76,7 @@ module BillForward
 
     def initialize(options={})
       TypeCheck.verifyObj(Hash, options, 'options')
-      options[:environment] ||= "default"
-      @environment = options[:environment]
+      @use_logging = options[:use_logging]
 
       if options[:host]
         @host = options[:host]
@@ -85,6 +84,11 @@ module BillForward
         raise ClientInstantiationException.new "Failed to initialize BillForward API Client\n" +
                                          "Required parameters: :host, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
                                          "Supplied Parameters: #{options}"
+      end
+
+      if options[:use_proxy]
+        @use_proxy = options[:use_proxy]
+        @proxy_url = options[:proxy_url]
       end
 
       if options[:api_token]
@@ -98,7 +102,7 @@ module BillForward
           @password = options[:password]
         else
           raise ClientException.new "Failed to initialize BillForward API Client\n"+
-                                           "Required parameters: :host and :environment, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                           "Required parameters: :host and :use_logging, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
                                            "Supplied Parameters: #{options}"
         end
 
@@ -151,7 +155,9 @@ module BillForward
 
     def execute_request(method, url, token, payload=nil)
       # Enable Fiddler:
-      RestClient.proxy = "http://127.0.0.1:8888"
+      if @use_proxy
+        RestClient.proxy = @proxy_url
+      end
       
       # content_type seems to be broken on generic execute.
       # darn.
@@ -296,7 +302,7 @@ module BillForward
       end
 
       def log(*args)
-        if @environment == "development"
+        if @use_logging
           puts *args
         end
       end

@@ -10,8 +10,6 @@ else
 	# If used in this placeholder state, functional tests will not pass.
 	module BillForwardTest
 		BILLFORWARD_API_HOST='insert-API-URL-here'
-		# enable logging of requests by setting to 'development'. any other environment is default.
-		BILLFORWARD_ENVIRONMENT="default"
 		BILLFORWARD_API_TOKEN="insert-access-token-here OR leave-blank-for-OAUTH"
 
 		### alternatively:
@@ -22,6 +20,11 @@ else
 		BILLFORWARD_CLIENT_ID="insert-client-id"
 		BILLFORWARD_CLIENT_SECRET="insert-client-secret"
 
+
+		# ---- Enable logging if you want (shows request and response bodies)
+		USE_LOGGING=false
+
+
 		# ---- Required for Authorize.Net gateway tests only
 		AUTHORIZE_NET_LOGIN_ID = 'FILL IN WITH AUTHORIZE NET LOGIN ID'
 		AUTHORIZE_NET_TRANSACTION_KEY = 'FILL IN WITH AUTHORIZE NET TRANSACTION KEY'
@@ -29,6 +32,11 @@ else
 		AUTHORIZE_NET_CUSTOMER_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PROFILE ID
 		AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PAYMENT PROFILE ID
 		AUTHORIZE_NET_CARD_LAST_4_DIGITS = 1234
+
+
+		# ---- Enable proxy if you want (for example to see requests in Fiddler)
+		CLIENT_PROXY_ENABLED=false
+		CLIENT_PROXY_URL="http://127.0.0.1:8888"
 	end
 end
 
@@ -39,18 +47,22 @@ module BillForwardTest
 		# Authenticate using OAuth; username and password
 		TEST_CLIENT = BillForward::Client.new(
 				    :host =>          BillForwardTest::BILLFORWARD_API_HOST,
-				    :environment =>   BillForwardTest::BILLFORWARD_ENVIRONMENT,
+				    :use_logging =>   BillForwardTest::USE_LOGGING,
 				    :username =>      BillForwardTest::BILLFORWARD_USERNAME,
 				    :password =>      BillForwardTest::BILLFORWARD_PASSWORD,
 				    :client_id =>     BillForwardTest::BILLFORWARD_CLIENT_ID,
-				    :client_secret => BillForwardTest::BILLFORWARD_CLIENT_SECRET
+				    :client_secret => BillForwardTest::BILLFORWARD_CLIENT_SECRET,
+				    :use_proxy     => BillForwardTest::CLIENT_PROXY_ENABLED,
+				    :proxty_url =>    BillForwardTest::CLIENT_PROXY_URL
 					)
 	else
 		# Authenticate instead using access token
 		TEST_CLIENT = BillForward::Client.new(
 				    :host =>          BillForwardTest::BILLFORWARD_API_HOST,
-				    :environment =>   BillForwardTest::BILLFORWARD_ENVIRONMENT,
-				    :api_token =>     BillForwardTest::BILLFORWARD_API_TOKEN
+				    :use_logging =>   BillForwardTest::USE_LOGGING,
+				    :api_token =>     BillForwardTest::BILLFORWARD_API_TOKEN,
+				    :use_proxy     => BillForwardTest::CLIENT_PROXY_ENABLED,
+				    :proxty_url =>    BillForwardTest::CLIENT_PROXY_URL
 					)
 	end
 end
