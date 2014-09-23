@@ -30,7 +30,7 @@ module BillForward
   	end
   protected
     def unserialize_all(hash)
-      super hash
+      super
       unserialize_entity('unitOfMeasure', UnitOfMeasure, hash)
     end
   end

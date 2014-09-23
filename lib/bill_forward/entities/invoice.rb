@@ -16,7 +16,7 @@ module BillForward
 
   protected
     def unserialize_all(hash)
-      super hash
+      super
       unserialize_array_of_entities('invoiceLines', InvoiceLine, hash)
       unserialize_array_of_entities('taxLines', TaxLine, hash)
       unserialize_array_of_entities('invoicePayments', InvoicePayment, hash)

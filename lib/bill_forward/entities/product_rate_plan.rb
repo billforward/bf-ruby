@@ -9,7 +9,7 @@ module BillForward
 
     protected
       def unserialize_all(hash)
-        super hash
+        super
         unserialize_entity('product', Product, hash)
 
         unserialize_array_of_entities('taxation', TaxationLink, hash)

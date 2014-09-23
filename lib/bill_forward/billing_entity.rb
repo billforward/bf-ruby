@@ -5,6 +5,8 @@ module BillForward
 		attr_accessor :_client
 
 		def initialize(state_params = nil, client = nil)
+			raise AbstractInstantiateError.new('This abstract class cannot be instantiated!') if self.class == MutableEntity
+			
 			client = self.class.singleton_client if client.nil?
 			state_params = {} if state_params.nil?
 

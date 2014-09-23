@@ -14,7 +14,7 @@ module BillForward
 
     protected
       def unserialize_all(hash)
-        super hash
+        super
         unserialize_array_of_entities('tiers', PricingComponentTier, hash)
       end
   end

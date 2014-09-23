@@ -1,5 +1,10 @@
 module BillForward
 	class InsertableEntity < BillingEntity
+		def initialize(*args)
+	      raise AbstractInstantiateError.new('This abstract class cannot be instantiated!') if self.class == InsertableEntity
+	      super
+	    end
+
 		class << self
 			# Asks API to create a real instance of specified entity,
 	 		# based on provided model.

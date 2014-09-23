@@ -4,8 +4,13 @@ module BillForward
   # Role[]           .roles
   # PaymentMethod[]  .paymentMethods
   # Profile          .profile
-  class Account < MutableEntity
+  class Amendment < InsertableEntity
   	@resource_path = BillForward::ResourcePath.new("accounts", "account")
+
+    def initialize(*args)
+      raise AbstractInstantiateError.new('This abstract class cannot be instantiated!') if self.class == Amendment
+      super
+    end
 
   protected
     def unserialize_all(hash)

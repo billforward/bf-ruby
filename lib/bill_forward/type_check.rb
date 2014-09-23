@@ -15,4 +15,7 @@ module BillForward
 			"Instead received: '#{actualClassName}'") unless actualClass<=expectedClass
 		end
 	end
+
+	class AbstractInstantiateError < StandardError
+	end
 end
