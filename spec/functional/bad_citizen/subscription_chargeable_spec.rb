@@ -246,8 +246,6 @@ describe BillForward::Subscription do
 					'pricingComponentValues' =>         pricing_component_values
 					})
 				created_sub = BillForward::Subscription.create(subscription)
-
-				puts created_sub
 			end
 		end
 	end

@@ -24,7 +24,9 @@ module BillForward
     protected
       def unserialize_all(hash)
         super hash
-        unserialize_entity('pricingComponentValueChanges', PricingComponentValueChange, hash)
+        
+        unserialize_array_of_entities('pricingComponentValues', PricingComponentValue, hash)
+        unserialize_array_of_entities('pricingComponentValueChanges', PricingComponentValueChange, hash)
       end
   end
 end
