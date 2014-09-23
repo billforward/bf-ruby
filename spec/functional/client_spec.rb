@@ -13,7 +13,6 @@ describe BillForward::Client do
 		end
 		it "should raise upon bad token" do
 			host=@client.host
-			environment=@client.environment
 			token="badtoken"
 			dudclient = BillForward::Client.new(
 			    :host => host,

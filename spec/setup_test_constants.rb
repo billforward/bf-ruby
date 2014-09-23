@@ -25,6 +25,12 @@ else
 		USE_LOGGING=false
 
 
+		# ---- Enable proxy if you want (for example to see requests in Fiddler)
+		CLIENT_PROXY_ENABLED=false
+		CLIENT_PROXY_URL="http://127.0.0.1:8888"
+
+
+		## These constants are required only for running situational tests (not in the main run):
 		# ---- Required for Authorize.Net gateway tests only
 		AUTHORIZE_NET_LOGIN_ID = 'FILL IN WITH AUTHORIZE NET LOGIN ID'
 		AUTHORIZE_NET_TRANSACTION_KEY = 'FILL IN WITH AUTHORIZE NET TRANSACTION KEY'
@@ -33,10 +39,9 @@ else
 		AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PAYMENT PROFILE ID
 		AUTHORIZE_NET_CARD_LAST_4_DIGITS = 1234
 
-
-		# ---- Enable proxy if you want (for example to see requests in Fiddler)
-		CLIENT_PROXY_ENABLED=false
-		CLIENT_PROXY_URL="http://127.0.0.1:8888"
+		
+		# ---- Required for Invoice tests only
+		USUAL_INVOICE_ID = 'FILL IN WITH EXISTING INVOICE ID'
 	end
 end
 

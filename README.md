@@ -172,6 +172,45 @@ module BillForwardTest
 	USE_LOGGING=false
 
 
+	# ---- Enable proxy if you want (for example to see requests in Fiddler)
+	CLIENT_PROXY_ENABLED=false
+	CLIENT_PROXY_URL="http://127.0.0.1:8888"
+end
+```
+
+Run main functional tests + offline tests with:
+```bash
+rake spec_main
+```
+
+There are further tests still that can be run, but these are situational -- for example, they require an invoice to exist already, or require credentials to be declared for a payment gateway.
+
+You can specify constants for use in situational tests in the usual test constants file, as before:
+
+```ruby
+module BillForwardTest
+	BILLFORWARD_API_HOST='insert-API-URL-here'
+	BILLFORWARD_API_TOKEN="insert-access-token-here OR leave-blank-for-OAUTH"
+
+	### alternatively:
+	# (these values are used if you leave API token blank)
+	# authenticate using OAUTH:
+	BILLFORWARD_USERNAME="insert-username"
+	BILLFORWARD_PASSWORD="insert-password"
+	BILLFORWARD_CLIENT_ID="insert-client-id"
+	BILLFORWARD_CLIENT_SECRET="insert-client-secret"
+
+
+	# ---- Enable logging if you want (shows request and response bodies)
+	USE_LOGGING=false
+
+
+	# ---- Enable proxy if you want (for example to see requests in Fiddler)
+	CLIENT_PROXY_ENABLED=false
+	CLIENT_PROXY_URL="http://127.0.0.1:8888"
+
+
+	## These constants are required only for running situational tests (not in the main run):
 	# ---- Required for Authorize.Net gateway tests only
 	AUTHORIZE_NET_LOGIN_ID = 'FILL IN WITH AUTHORIZE NET LOGIN ID'
 	AUTHORIZE_NET_TRANSACTION_KEY = 'FILL IN WITH AUTHORIZE NET TRANSACTION KEY'
@@ -179,15 +218,10 @@ module BillForwardTest
 	AUTHORIZE_NET_CUSTOMER_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PROFILE ID
 	AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID = 12345678 # FILL IN WITH AUTHORIZE NET CUSTOMER PAYMENT PROFILE ID
 	AUTHORIZE_NET_CARD_LAST_4_DIGITS = 1234
-
-
-	# ---- Enable proxy if you want (for example to see requests in Fiddler)
-	CLIENT_PROXY_ENABLED=false
-	CLIENT_PROXY_URL="http://127.0.0.1:8888"
 end
 ```
 
-Run all tests with:
+Run main functional tests + offline tests + situational tests with:
 ```bash
 rake spec_all
 ```
