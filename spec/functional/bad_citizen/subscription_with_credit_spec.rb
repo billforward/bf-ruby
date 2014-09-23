@@ -146,7 +146,7 @@ describe BillForward::Subscription do
 					'name' => 'Devices used, tiered',
 					'description' => 'How many devices you use, but with a tiering system',
 					'unitOfMeasureID' => created_uom.id,
-					'chargeType' => 'subscription',
+					'chargeType' => 'usage',
 					'upgradeMode' => 'immediate',
 					'downgradeMode' => 'immediate',
 					'defaultQuantity' => 10,
@@ -154,6 +154,7 @@ describe BillForward::Subscription do
 				}))
 
 
+			# create product rate plan, using pricing components and product
 			prp = BillForward::ProductRatePlan.new({
 				'currency' => 'USD',
 				'name' => 'A sound plan',
@@ -168,57 +169,67 @@ describe BillForward::Subscription do
 			@created_prp = created_prp
 			@created_payment_method = created_payment_method
 		end
-		subject(:account) { @created_account }
-		subject(:prp) { @created_prp }
-		subject(:payment_method) { @created_payment_method }
 		describe '::create' do
-			it 'creates Subscription' do
-				# make subscription..
-				# requires:
-				# - account [we have this already]
-				# - product rate plan [we have this already]
-				# - pricing component value instances (for every pricing component on the PRP)
-				# - payment method subscription links (for every payment method on the account)
+			describe 'the subscription' do
+				before :all do
+					# make subscription..
+					# requires:
+					# - account [we have this already]
+					# - product rate plan [we have this already]
+					# - pricing component value instances (for every pricing component on the PRP)
+					# - payment method subscription links (for every payment method on the account)
 
-				# create PaymentMethodSubscriptionLink from payment method and organisation
-				payment_method_subscription_links = Array.new
-				payment_method_subscription_links.push(
-					BillForward::PaymentMethodSubscriptionLink.new({
-						'paymentMethodID' => payment_method.id
-					}))
-
-
-				pricing_components = prp.pricingComponents
-				# get references to each pricing component we made
-				flat_pricing_component_1 = pricing_components[0]
-				tiered_pricing_component_1 = pricing_components[1]
-
-				# create PricingComponentValue instances for every PricingComponent on the PRP
-				pricing_component_values = Array.new
-				pricing_component_values.push(
-					BillForward::PricingComponentValue.new({
-						'pricingComponentID' => flat_pricing_component_1.id,
-						'value' => 1,
-					}),
-					BillForward::PricingComponentValue.new({
-						'pricingComponentID' => tiered_pricing_component_1.id,
-						'value' => 5,
-					}))
+					# create PaymentMethodSubscriptionLink from payment method and organisation
+					payment_method_subscription_links = Array.new
+					payment_method_subscription_links.push(
+						BillForward::PaymentMethodSubscriptionLink.new({
+							'paymentMethodID' => @created_payment_method.id
+						}))
 
 
-				# create subscription
-				subscription = BillForward::Subscription.new({
-					'type' =>                           'Subscription',
-					'productRatePlanID' =>              prp.id,
-					'accountID' =>                      account.id,
-					'name' =>                           'Memorable Subscription',
-					'description' =>                    'Memorable Subscription Description',
-					'paymentMethodSubscriptionLinks' => payment_method_subscription_links,
-					'pricingComponentValues' =>         pricing_component_values
-					})
-				created_sub = BillForward::Subscription.create(subscription)
+					pricing_components = @created_prp.pricingComponents
+					# get references to each pricing component we made
+					flat_pricing_component_1 = pricing_components[0]
+					tiered_pricing_component_1 = pricing_components[1]
 
-				expect(created_sub['@type']).to eq(BillForward::Subscription.resource_path.entity_name)
+					# create PricingComponentValue instances for every PricingComponent on the PRP
+					pricing_component_values = Array.new
+					pricing_component_values.push(
+						BillForward::PricingComponentValue.new({
+							'pricingComponentID' => flat_pricing_component_1.id,
+							'value' => 1,
+						}),
+						BillForward::PricingComponentValue.new({
+							'pricingComponentID' => tiered_pricing_component_1.id,
+							'value' => 5,
+						}))
+
+
+					# create subscription
+					subscription = BillForward::Subscription.new({
+						'type' =>                           'Subscription',
+						'productRatePlanID' =>              @created_prp.id,
+						'accountID' =>                      @created_account.id,
+						'name' =>                           'Memorable Subscription',
+						'description' =>                    'Memorable Subscription Description',
+						'paymentMethodSubscriptionLinks' => payment_method_subscription_links,
+						'pricingComponentValues' =>         pricing_component_values
+						})
+					created_sub = BillForward::Subscription.create(subscription)
+
+					# create references for tests to use
+					@created_sub = created_sub
+				end
+				subject(:subscription) { @created_sub }
+				it 'is created' do
+					expect(subscription['@type']).to eq(BillForward::Subscription.resource_path.entity_name)
+				end
+				it 'can be activated' do
+					expect(subscription['state']).to eq('Provisioned')
+					updated_subscription = subscription.activate
+
+					expect(updated_subscription['state']).to eq('AwaitingPayment')
+				end
 			end
 		end
 	end

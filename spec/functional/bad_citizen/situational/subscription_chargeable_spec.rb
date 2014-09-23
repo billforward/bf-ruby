@@ -180,6 +180,7 @@ describe BillForward::Subscription do
 				}))
 
 
+			# create product rate plan, using pricing components and product
 			prp = BillForward::ProductRatePlan.new({
 				'currency' => 'USD',
 				'name' => 'A sound plan',
