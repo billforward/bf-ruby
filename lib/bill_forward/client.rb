@@ -69,7 +69,7 @@ module BillForward
     # @param options={} [Hash] Options with which to construct client
     # 
     # @return [Client] The constructed client
-    def self.makeDefaultClient(options)
+    def self.make_default_client(options)
       constructedClient = self.new(options)
       self.default_client = constructedClient
     end
@@ -205,11 +205,25 @@ module BillForward
     end
 
     private
+      def uri_encode(params = {})
+        TypeCheck.verifyObj(Hash, params, 'params')
+
+        encoded_params = Array.new
+
+        params.each do |key, value|
+          encoded_key = ERB::Util.url_encode key
+          encoded_value = ERB::Util.url_encode value
+          encoded_params.push("#{encoded_key}=#{encoded_value}")
+        end
+        query = encoded_params.join '&'
+        
+      end
+
       def request(method, url, params={}, payload=nil)
         full_url = "#{@host}#{url}"
 
         # Make params into query parameters
-        full_url += "#{URI.parse(url).query ? '&' : '?'}#{uri_encode(params)}" if params && params.any?
+        full_url += "?#{uri_encode(params)}" if params && params.any?
         token = get_token
 
         log "#{method} #{url}"

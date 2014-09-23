@@ -17,7 +17,6 @@ describe BillForward::Client do
 			token="badtoken"
 			dudclient = BillForward::Client.new(
 			    :host => host,
-			    :environment => environment,
 			    :api_token => token
 				)
 			expect{BillForward::Organisation.get_mine(nil,dudclient)}.to raise_error(BillForward::ApiAuthorizationError)

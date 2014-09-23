@@ -38,7 +38,7 @@ module BillForward
 				endpoint = ''
 				url_full = "#{route}/#{endpoint}#{id}"
 
-				response = client.get_first(url_full)
+				response = client.get_first(url_full, query_params)
 
 				# maybe use build_entity here for consistency
 				self.new(response, client)
@@ -54,7 +54,7 @@ module BillForward
 				endpoint = ''
 				url_full = "#{route}/#{endpoint}"
 
-				response = client.get(url_full)
+				response = client.get(url_full, query_params)
 				results = response["results"]
 
 				# maybe use build_entity_array here for consistency

@@ -3,17 +3,14 @@ require File.join(File.expand_path(File.dirname(__FILE__)), "..", "spec_helper")
 describe BillForward::BillingEntity do
 	before :all do
 		@host="http://localhost:8080/RestAPI/"
-		@environment="development"
 		@token1="sometoken1"
 		@token2="sometoken2"
 		@dudclient1 = BillForward::Client.new(
 		    :host => @host,
-		    :environment => @environment,
 		    :api_token => @token1
 			)
 		@dudclient2 = BillForward::Client.new(
 		    :host => @host,
-		    :environment => @environment,
 		    :api_token => @token2
 			)
 	end
@@ -43,10 +40,9 @@ describe BillForward::BillingEntity do
 			it 'uses default client' do
 				dudclient_options = {
 				    :host => @host,
-				    :environment => @environment,
 				    :api_token => @token2
 					}
-				BillForward::Client.makeDefaultClient(dudclient_options)
+				BillForward::Client.make_default_client(dudclient_options)
 				entity = BillForward::Account.new
 				expect(entity._client.api_token).to eq(@token2)
 			end
