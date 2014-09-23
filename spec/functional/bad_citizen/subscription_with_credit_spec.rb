@@ -4,38 +4,12 @@ describe BillForward::Subscription do
 	before :all do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
-
-		# Authorize.Net credentials used to test adding a payment gateway
-		@authorize_net_login_id = BillForwardTest::AUTHORIZE_NET_LOGIN_ID
-		@authorize_net_transaction_key = BillForwardTest::AUTHORIZE_NET_TRANSACTION_KEY
-
-		# Authorize.Net credentials used to test adding a payment gateway
-		@authorize_net_customer_profile_id = BillForwardTest::AUTHORIZE_NET_CUSTOMER_PROFILE_ID
-		@authorize_net_customer_payment_profile_id = BillForwardTest::AUTHORIZE_NET_CUSTOMER_PAYMENT_PROFILE_ID
-		@authorize_net_card_last_4_digits = BillForwardTest::AUTHORIZE_NET_CARD_LAST_4_DIGITS
 	end
 	context 'upon creating required entities for chargeable Subscription' do
 		before :all do
 			# get our organisation
 			organisations = BillForward::Organisation.get_mine
 			first_org = organisations.first
-
-
-			# remove from our organisation all existing AuthorizeNetConfigurations (if any)
-			filtered = first_org.apiConfigurations.reject do |config|
-				config['@type'] == 'AuthorizeNetConfiguration'
-			end
-			first_org.apiConfigurations = filtered
-
-
-			# add to our organisation: a new AuthorizeNetConfiguration
-			first_org.apiConfigurations.push BillForward::APIConfiguration.new({
-				 "@type" =>          "AuthorizeNetConfiguration",
-			     "APILoginID" =>     @authorize_net_login_id,
-			     "transactionKey" => @authorize_net_transaction_key,
-			     "environment" =>    "Sandbox"
-				})
-			updated_org = first_org.save
 
 
 			# create an account
@@ -66,28 +40,28 @@ describe BillForward::Subscription do
 			created_account = BillForward::Account.create account
 
 
-			# create for our account: a tokenized card from Authorize.Net
-			authorize_net_token = BillForward::AuthorizeNetToken.new({
-				'accountID' => created_account.id,
-				'customerProfileID' => @authorize_net_customer_profile_id,
-				'customerPaymentProfileID' => @authorize_net_customer_payment_profile_id,
-				'lastFourDigits' => @authorize_net_card_last_4_digits,
-				})
-			created_token = BillForward::AuthorizeNetToken.create(authorize_net_token)
-
-
-			# create for our account: a new payment method, using Authorize.Net token
+			# create for our account: a new payment method, using credit notes
 			payment_method = BillForward::PaymentMethod.new({
 				'accountID' => created_account.id,
-				'linkID' => created_token.id,
-				'name' => 'Authorize.Net',
-				'description' => 'Pay via Authorize.Net',
-				'gateway' => 'authorizeNet',
+				'name' => 'Credit Notes',
+				'description' => 'Pay using credit',
+				# engines will link this to an invoice once paid, for the sake of refunds
+				'linkID' => '',
+				'gateway' => 'credit_note',
 				'userEditable' => 0,
 				'priority' => 100,
-				'reusable' => 1,
+				'reusable' => 1
 				})
 			created_payment_method = BillForward::PaymentMethod::create(payment_method)
+
+
+			# FINISH THIS TOMORROW
+			credit_note = BillForward::CreditNote.new({
+				"accountID" => account.id,
+			    "nominalValue" => 15,
+			    "currency" => "USD"
+				})
+			created_credit_note = BillForward::CreditNote.create(credit_note)
 
 
 			# create a unit of measure
@@ -193,12 +167,10 @@ describe BillForward::Subscription do
 			@created_account = created_account
 			@created_prp = created_prp
 			@created_payment_method = created_payment_method
-			@updated_org = updated_org
 		end
 		subject(:account) { @created_account }
 		subject(:prp) { @created_prp }
 		subject(:payment_method) { @created_payment_method }
-		subject(:organisation) { @updated_org }
 		describe '::create' do
 			it 'creates Subscription' do
 				# make subscription..
@@ -212,8 +184,7 @@ describe BillForward::Subscription do
 				payment_method_subscription_links = Array.new
 				payment_method_subscription_links.push(
 					BillForward::PaymentMethodSubscriptionLink.new({
-						'paymentMethodID' => payment_method.id,
-						'organizationID' => organisation.id,
+						'paymentMethodID' => payment_method.id
 					}))
 
 
