@@ -33,8 +33,8 @@ describe BillForward::Subscription do
 						'state' => 'prod',
 						'name' => 'Month of Paracetamoxyfrusebendroneomycin',
 						'description' => 'It can cure the common cold and being struck by lightning',
-						'durationPeriod' => 'days',
-						'duration' => 28,
+						'durationPeriod' => 'minutes',
+						'duration' => 1,
 						})
 					created_product = BillForward::Product::create(product)
 
