@@ -22,7 +22,6 @@ describe BillForward::InvoiceRecalculationAmendment do
 				})
 
 			created_amendment = BillForward::InvoiceRecalculationAmendment.create(amendment)
-			puts created_amendment
 		end
 	end
 end

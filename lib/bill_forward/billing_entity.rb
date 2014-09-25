@@ -93,13 +93,18 @@ module BillForward
 			method_missing(set_key, value)
 		end
 
-		def to_json(*a)
+		def to_ordered_hash
 			ordered_hash = hash_with_type_at_top(@_state_params)
+			ordered_hash
+		end
+
+		def to_json(*a)
+			ordered_hash = to_ordered_hash
 			ordered_hash.to_json
 			# @_state_params.to_json
 		end
 
-		def to_unordered_hash(*a)
+		def to_unordered_hash
 			json_string = to_json
 			JSON.parse(json_string)
 		end
@@ -129,19 +134,7 @@ module BillForward
 
 				hash = new_hash
 			end
-			# @_registered_entities = Hash.new
-			# @_registered_entity_arrays = Hash.new
-			# @_registered_entities.each do |key, value|
-
-			# @_registered_entity_arrays.each do |key, value|
-			# 	# locate registered array of entities, in this hash
-			# 	array = hash.with_indifferent_access[key]
-
-			# 	# all entities in this array need their @type reordered
-			# 	array.each do |value|
-			# 		value = hash_with_type_at_top(value)
-			# 	end
-			# end
+			# TODO: give dot access on even these hashes.
 			return hash
 		end
 
@@ -155,17 +148,52 @@ module BillForward
 		end
 
 		def unserialize_all(hash)
+			TypeCheck.verifyObj(Hash, hash, 'hash')
+
 			hash.each do |key, value|
-				unserialize_one key, value
+				unserialized = unserialize_one value
+				set_state_param(key, unserialized)
 			end
 		end
 
-		def unserialize_one(key, value)
-			if value.is_a? Array
+		def unserialize_hash(hash)
+			TypeCheck.verifyObj(Hash, hash, 'hash')
 
-			#elsif value.is_a? String
+			# API presently requires '@type' (if present) to be first key in JSON
+			hash = hash_with_type_at_top(hash)
+
+			hash.each do |key, value|
+				# recurse down, so that all nested hashes get same treatment
+				unserialized = unserialize_one value
+
+				# replace with unserialized version
+				hash[key] = unserialized
 			end
-			set_state_param(key, value)
+
+			hash
+		end
+
+		def unserialize_array(array)
+			TypeCheck.verifyObj(Array, array, 'array')
+
+			array.each_with_index do |value, index|
+				# recurse down, so that all nested hashes get same treatment
+				unserialized = unserialize_one value
+
+				# replace with unserialized version
+				array[index] = unserialized
+			end
+
+			array
+		end
+
+		def unserialize_one(value)
+			if value.is_a? Hash
+				value = unserialize_hash(value)
+			elsif value.is_a? Array
+				value = unserialize_array(value)
+			end
+			value
 		end
 
 		def unserialize_entity(key, entity_class, hash)
