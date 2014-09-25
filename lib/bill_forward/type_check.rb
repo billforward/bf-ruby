@@ -5,14 +5,14 @@ module BillForward
 			expectedClassName = expectedClass.name
 			actualClassName = obj.class.name
 			raise TypeError.new("Expected instance of '#{expectedClassName}' at argument '#{argName}'. "+
-			"Instead received: '#{actualClassName}'") unless obj.kind_of?(expectedClass)
+			"Instead received: '#{actualClassName}'") unless obj.kind_of?(expectedClass) || obj.kind_of?(RSpec::Mocks::Double)
 		end
 		# ensure that the provided class extends the expected class
 		def self.verifyClass(expectedClass, actualClass, argName)
 			expectedClassName = expectedClass.name
 			actualClassName = actualClass.name
 			raise TypeError.new("Expected instance of '#{expectedClassName}' at argument '#{argName}'. "+
-			"Instead received: '#{actualClassName}'") unless actualClass<=expectedClass
+			"Instead received: '#{actualClassName}'") unless actualClass<=expectedClass || actualClass<=RSpec::Mocks::Double
 		end
 	end
 
