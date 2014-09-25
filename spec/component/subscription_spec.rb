@@ -12,56 +12,127 @@ describe BillForward::Subscription do
 	describe '::get_by_id' do
 		context 'where subscription exists' do
 			describe 'the unserialized subscription' do
-				context 'using array access' do
-					it "has @type at top" do
-			            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
+				describe '.to_ordered_hash' do
+					context 'using array access' do
+						it "has @type at top" do
+				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
 
-			            response = double
-			            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-			            allow(RestClient::Request).to receive(:execute).and_return(response)
+				            response = double
+				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
+				            allow(RestClient::Request).to receive(:execute).and_return(response)
 
-			            subscription = BillForward::Subscription.get_by_id subscription_id
+				            subscription = BillForward::Subscription.get_by_id subscription_id
 
-			            # mainly just confirm that unserialization is reasonably healthy.
-			            expect(subscription.id).to eq(subscription_id)
+				            # mainly just confirm that unserialization is reasonably healthy.
+				            expect(subscription.id).to eq(subscription_id)
 
-			            # check that @type is the first key on subscription (we use ordered hashes)
-			            payload = subscription.to_ordered_hash
-			            payload_first_kvp = payload.first
-			            kvp_key  = payload_first_kvp.first
-						expect(kvp_key).to eq('@type')
+				            # check that @type is the first key on subscription (we use ordered hashes)
+				            payload = subscription.to_ordered_hash
+				            payload_first_kvp = payload.first
+				            kvp_key  = payload_first_kvp.first
+							expect(kvp_key).to eq('@type')
 
-						# check that @type is the first key on nested entities (we use ordered hashes)
-						a_pricing_component = payload['productRatePlan']['pricingComponents'].first
-						pricing_component_first_kvp = a_pricing_component.first
-						kvp_key  = pricing_component_first_kvp.first
-						expect(kvp_key).to eq('@type')
+							# check that @type is the first key on nested entities (we use ordered hashes)
+							a_pricing_component = payload['productRatePlan']['pricingComponents'].first
+							pricing_component_first_kvp = a_pricing_component.first
+							kvp_key  = pricing_component_first_kvp.first
+							expect(kvp_key).to eq('@type')
+						end
+					end
+					context 'using dot access' do
+						it "has @type at top" do
+				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
+
+				            response = double
+				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
+				            allow(RestClient::Request).to receive(:execute).and_return(response)
+
+				            subscription = BillForward::Subscription.get_by_id subscription_id
+
+				            # mainly just confirm that unserialization is reasonably healthy.
+				            expect(subscription.id).to eq(subscription_id)
+
+				            # check that @type is the first key on subscription (we use ordered hashes)
+				            payload = subscription.to_ordered_hash
+				            payload_first_kvp = payload.first
+				            kvp_key  = payload_first_kvp.first
+							expect(kvp_key).to eq('@type')
+
+							# check that @type is the first key on nested entities (we use ordered hashes)
+							a_pricing_component = payload.productRatePlan.pricingComponents.first
+							pricing_component_first_kvp = a_pricing_component.first
+							kvp_key  = pricing_component_first_kvp.first
+							expect(kvp_key).to eq('@type')
+						end
 					end
 				end
-				context 'using dot access' do
-					it "has @type at top" do
-			            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
+				# NOTE: ideally no anonymous entity would exist, because we would register all known nested entities.
+				# they're sort of a 'last resort' for when the API has more fields than we realized (ie version change, or lack of parity).
+				# this test will soon self-deprecate, because we aim to register all entities that we support anyway.
+				# more it exists to confirm the world works at the time of writing -- but it shouldn't be used as a lasting regression test,
+				# since that means leaving known nested anonymous entities in on purpose!
+				describe 'nested anonymous entity' do
+					context 'using dot access' do
+						it "can be read" do
+				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
 
-			            response = double
-			            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-			            allow(RestClient::Request).to receive(:execute).and_return(response)
+				            response = double
+				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
+				            allow(RestClient::Request).to receive(:execute).and_return(response)
 
-			            subscription = BillForward::Subscription.get_by_id subscription_id
+				            subscription = BillForward::Subscription.get_by_id subscription_id
 
-			            # mainly just confirm that unserialization is reasonably healthy.
-			            expect(subscription.id).to eq(subscription_id)
+							a_pricing_component = subscription.productRatePlan.pricingComponents.first
+							expect(a_pricing_component.name).to eq('Devices used, fixed')
+						end
+						it "can be changed" do
+				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
 
-			            # check that @type is the first key on subscription (we use ordered hashes)
-			            payload = subscription.to_ordered_hash
-			            payload_first_kvp = payload.first
-			            kvp_key  = payload_first_kvp.first
-						expect(kvp_key).to eq('@type')
+				            response = double
+				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
+				            allow(RestClient::Request).to receive(:execute).and_return(response)
 
-						# check that @type is the first key on nested entities (we use ordered hashes)
-						a_pricing_component = payload.productRatePlan.pricingComponents.first
-						pricing_component_first_kvp = a_pricing_component.first
-						kvp_key  = pricing_component_first_kvp.first
-						expect(kvp_key).to eq('@type')
+				            subscription = BillForward::Subscription.get_by_id subscription_id
+
+							a_pricing_component = subscription.productRatePlan.pricingComponents.first
+							expect(a_pricing_component.name).to eq('Devices used, fixed')
+
+							new_name = 'bob'
+							a_pricing_component.name = new_name
+							expect(a_pricing_component.name).to eq(new_name)
+							expect(subscription.productRatePlan.pricingComponents.first.name).to eq(new_name)
+						end
+					end
+					context 'using array access' do
+						it "can be read" do
+				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
+
+				            response = double
+				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
+				            allow(RestClient::Request).to receive(:execute).and_return(response)
+
+				            subscription = BillForward::Subscription.get_by_id subscription_id
+
+							a_pricing_component = subscription['productRatePlan']['pricingComponents'].first
+							expect(a_pricing_component['name']).to eq('Devices used, fixed')
+						end
+						it "can be changed" do
+				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
+
+				            response = double
+				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
+				            allow(RestClient::Request).to receive(:execute).and_return(response)
+
+				            subscription = BillForward::Subscription.get_by_id subscription_id
+
+							a_pricing_component = subscription['productRatePlan']['pricingComponents'].first
+							expect(a_pricing_component['name']).to eq('Devices used, fixed')
+
+							new_name = 'bob'
+							a_pricing_component.name = new_name
+							expect(a_pricing_component['name']).to eq(new_name)
+							expect(subscription['productRatePlan']['pricingComponents'].first['name']).to eq(new_name)
+						end
 					end
 				end
 			end

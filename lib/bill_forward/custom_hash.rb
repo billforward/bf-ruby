@@ -1,4 +1,5 @@
 module BillForward
+	# Note: does not use indifferent access!
 	class OrderedHashWithDotAccess < ActiveSupport::OrderedHash
 		def method_missing(method_id, *arguments, &block)
 			# no call to super; our criteria is all keys.
