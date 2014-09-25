@@ -120,22 +120,21 @@ module BillForward
 
 	protected
 		def hash_with_type_at_top(hash)
+			new_hash = OrderedHashWithDotAccess.new
+
 			# API presently requires '@type' (if present) to be first key in JSON
 			if hash.has_key? '@type'
-				new_hash = ActiveSupport::OrderedHash.new
 				# insert existing @type as first element in ordered hash
 				new_hash['@type'] = hash.with_indifferent_access['@type']
-
-				# add key-value pairs excepting '@type' back in
-				# no, we don't care about the order of these.
-				hash.with_indifferent_access.reject {|key, value| key == '@type'}.each do |key, value|
-					new_hash[key] = value
-				end
-
-				hash = new_hash
 			end
-			# TODO: give dot access on even these hashes.
-			return hash
+
+			# add key-value pairs excepting '@type' back in
+			# no, we don't care about the order of these.
+			hash.with_indifferent_access.reject {|key, value| key == '@type'}.each do |key, value|
+				new_hash[key] = value
+			end
+
+			return new_hash
 		end
 
 		def set_state_param(key, value)
