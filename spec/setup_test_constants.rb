@@ -58,7 +58,7 @@ module BillForwardTest
 				    :client_id =>     BillForwardTest::BILLFORWARD_CLIENT_ID,
 				    :client_secret => BillForwardTest::BILLFORWARD_CLIENT_SECRET,
 				    :use_proxy     => BillForwardTest::CLIENT_PROXY_ENABLED,
-				    :proxty_url =>    BillForwardTest::CLIENT_PROXY_URL
+				    :proxy_url =>    BillForwardTest::CLIENT_PROXY_URL
 					)
 	else
 		# Authenticate instead using access token
@@ -67,7 +67,7 @@ module BillForwardTest
 				    :use_logging =>   BillForwardTest::USE_LOGGING,
 				    :api_token =>     BillForwardTest::BILLFORWARD_API_TOKEN,
 				    :use_proxy     => BillForwardTest::CLIENT_PROXY_ENABLED,
-				    :proxty_url =>    BillForwardTest::CLIENT_PROXY_URL
+				    :proxy_url =>    BillForwardTest::CLIENT_PROXY_URL
 					)
 	end
 end
