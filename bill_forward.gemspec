@@ -9,9 +9,9 @@ Gem::Specification.new do |spec|
   spec.authors       = ["BillForward"]
   spec.email         = ["support@billforward.net"]
   spec.summary       = "BillForward Ruby Client Library"
-  spec.description   = "Work in Progress"
+  spec.description   = "Enables you to call the BillForward API easily using Ruby"
   spec.homepage      = "http://www.billforward.net"
-  spec.license       = "NONE"
+  spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
