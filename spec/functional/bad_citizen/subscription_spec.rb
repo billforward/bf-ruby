@@ -42,8 +42,9 @@ describe BillForward::Subscription do
 					# make product rate plan..
 					# requires:
 					# - product,
-					# - pricing components..
-					# .. - which require pricing component tiers
+					# - pricing components, which require..
+					# .. - pricing component tiers
+					# .. - and unit of measure
 
 					# create tiers..
 					# for a flat pricing component:
