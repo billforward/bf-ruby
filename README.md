@@ -3,6 +3,7 @@
 This client library provides (via Ruby) easy access to the BillForward API.
 
 ## Installation
+### From Git
 
 Add this line to your application's Gemfile and run `bundle`:
 
@@ -16,6 +17,14 @@ Or install this source as a local gem using:
 bundle
 gem build bill_forward.gemspec
 gem install bill_forward
+```
+
+### From RubyGems mirror
+
+Add the `bill_forward` gem to your application's Gemfile and run `bundle`:
+```ruby
+source 'https://rubygems.org'
+gem 'bill_forward'
 ```
 
 ## Usage
@@ -127,6 +136,10 @@ gotten_account.profile.email = 'sometimes@testing.is.moe'
 updated_account = gotten_account.save() # or: gotten_account.profile.save()
 puts updated_account
 ```
+
+## Documentation
+
+View our [API Documentation](https://app-sandbox.billforward.net/#/api/method/accounts/POST?api=Ruby&path=%2Faccounts).
 
 ## Development
 ### Building
