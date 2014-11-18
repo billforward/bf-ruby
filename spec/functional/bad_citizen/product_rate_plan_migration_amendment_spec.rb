@@ -31,7 +31,8 @@ describe BillForward::Subscription do
 				}))
 			profile = BillForward::Profile.new({
 				'email' => 'always@testing.is.moe',
-				'firstName' => 'Test',
+				'firstName' => 'Ruby',
+				'lastName' => 'Red',
 				'addresses' => addresses
 				})
 			account = BillForward::Account.new({
@@ -58,7 +59,7 @@ describe BillForward::Subscription do
 			# issue $100 credit to our account
 			credit_note = BillForward::CreditNote.new({
 				"accountID" => created_account.id,
-			    "nominalValue" => 100,
+			    "nominalValue" => 1000,
 			    "currency" => "USD"
 				})
 			created_credit_note = BillForward::CreditNote.create(credit_note)
@@ -83,9 +84,9 @@ describe BillForward::Subscription do
 
 			# create a product
 			product = BillForward::Product.new({
-				'productType' => 'non-recurring',
+				'productType' => 'recurring',
 				'state' => 'prod',
-				'name' => 'Monthly recurring purchases',
+				'name' => 'Monthly recurring',
 				'description' => 'Purchaseables to which customer has a non-renewing, monthly entitlement',
 				'durationPeriod' => 'months',
 				'duration' => 1,
@@ -176,11 +177,13 @@ describe BillForward::Subscription do
 			# create product rate plan, using pricing components and product
 			prp = BillForward::ProductRatePlan.new({
 				'currency' => 'USD',
-				'name' => 'A sound plan',
+				'name' => 'Sound Plan',
 				'pricingComponents' => pricing_components,
 				'productID' => created_product.id,
 				})
 			created_prp = BillForward::ProductRatePlan.create(prp)
+
+			puts created_prp.id
 
 
 			# create references for tests to use
@@ -342,7 +345,7 @@ describe BillForward::Subscription do
 						# create product rate plan, using pricing components and product
 						prp = BillForward::ProductRatePlan.new({
 							'currency' => 'USD',
-							'name' => 'I love it when a plan comes together',
+							'name' => 'A Plan comes together',
 							'pricingComponents' => pricing_components,
 							'productID' => @created_product.id,
 							})

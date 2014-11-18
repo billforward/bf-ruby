@@ -32,6 +32,7 @@ describe BillForward::Subscription do
 			profile = BillForward::Profile.new({
 				'email' => 'always@testing.is.moe',
 				'firstName' => 'Test',
+				'lastName' => 'Always',
 				'addresses' => addresses
 				})
 			account = BillForward::Account.new({
@@ -65,21 +66,29 @@ describe BillForward::Subscription do
 
 
 			# create a unit of measure
-			unit_of_measure = BillForward::UnitOfMeasure.new({
-				'name' => 'Devices',
-				'displayedAs' => 'Devices',
+			unit_of_measure_1 = BillForward::UnitOfMeasure.new({
+				'name' => 'CPU',
+				'displayedAs' => 'Cycles',
 				'roundingScheme' => 'UP',
 				})
-			created_uom = BillForward::UnitOfMeasure.create(unit_of_measure)
+			created_uom_1 = BillForward::UnitOfMeasure.create(unit_of_measure_1)
+
+			# create another unit of measure
+			unit_of_measure_2 = BillForward::UnitOfMeasure.new({
+				'name' => 'Bandwidth',
+				'displayedAs' => 'Mbps',
+				'roundingScheme' => 'UP',
+				})
+			created_uom_2 = BillForward::UnitOfMeasure.create(unit_of_measure_2)
 
 
 			# create a product
 			product = BillForward::Product.new({
-				'productType' => 'non-recurring',
+				'productType' => 'recurring',
 				'state' => 'prod',
-				'name' => 'Month of Paracetamoxyfrusebendroneomycin',
-				'description' => 'It can cure the common cold and being struck by lightning',
-				'durationPeriod' => 'minutes',
+				'name' => 'Monthly recurring',
+				'description' => 'Purchaseables to which customer has a non-renewing, monthly entitlement',
+				'durationPeriod' => 'months',
 				'duration' => 1,
 				})
 			created_product = BillForward::Product::create(product)
@@ -91,73 +100,84 @@ describe BillForward::Subscription do
 			# - pricing components..
 			# .. - which require pricing component tiers
 
-			# create tiers..
-			# for a flat pricing component:
-			tiers_for_flat_component_1 = Array.new()
-			tiers_for_flat_component_1.push(
-				BillForward::PricingComponentTier.new({
-					'lowerThreshold' => 1,
-					'upperThreshold' => 1,
-					'pricingType' => 'fixed',
-					'price' => 1,
-				}))
-
 			# for a tiered pricing component:
 			tiers_for_tiered_component_1 = Array.new()
 			tiers_for_tiered_component_1.push(
 				BillForward::PricingComponentTier.new({
-					'lowerThreshold' => 1,
-					'upperThreshold' => 1,
-					'pricingType' => 'fixed',
-					'price' => 10,
+					'lowerThreshold' => 0,
+					'upperThreshold' => 0,
+					'pricingType' => 'unit',
+					'price' => 0,
 				}),
 				BillForward::PricingComponentTier.new({
-					'lowerThreshold' => 2,
+					'lowerThreshold' => 1,
 					'upperThreshold' => 10,
 					'pricingType' => 'unit',
-					'price' => 5
+					'price' => 1,
 				}),
 				BillForward::PricingComponentTier.new({
 					'lowerThreshold' => 11,
-					'upperThreshold' => 100,
+					'upperThreshold' => 1000,
 					'pricingType' => 'unit',
-					'price' => 2
+					'price' => 0.50
+				}))
+
+			# for another tiered pricing component:
+			tiers_for_tiered_component_2 = Array.new()
+			tiers_for_tiered_component_2.push(
+				BillForward::PricingComponentTier.new({
+					'lowerThreshold' => 0,
+					'upperThreshold' => 0,
+					'pricingType' => 'unit',
+					'price' => 0,
+				}),
+				BillForward::PricingComponentTier.new({
+					'lowerThreshold' => 1,
+					'upperThreshold' => 10,
+					'pricingType' => 'unit',
+					'price' => 0.10,
+				}),
+				BillForward::PricingComponentTier.new({
+					'lowerThreshold' => 11,
+					'upperThreshold' => 1000,
+					'pricingType' => 'unit',
+					'price' => 0.05
 				}))
 
 
-			# create pricing components, based on these tiers
+			# create 'in advance' ('subscription') pricing components, based on these tiers
 			pricing_components = Array.new()
 			pricing_components.push(
 				BillForward::PricingComponent.new({
-					'@type' => 'flatPricingComponent',
-					'chargeModel' => 'flat',
-					'name' => 'Devices used, fixed',
-					'description' => 'How many devices you use, I guess',
-					'unitOfMeasureID' => created_uom.id,
+					'@type' => 'tieredPricingComponent',
+					'chargeModel' => 'tiered',
+					'name' => 'CPU',
+					'description' => 'CPU consumed',
+					'unitOfMeasureID' => created_uom_1.id,
 					'chargeType' => 'subscription',
 					'upgradeMode' => 'immediate',
 					'downgradeMode' => 'immediate',
 					'defaultQuantity' => 1,
-					'tiers' => tiers_for_flat_component_1
+					'tiers' => tiers_for_tiered_component_1
 				}),
 				BillForward::PricingComponent.new({
 					'@type' => 'tieredPricingComponent',
 					'chargeModel' => 'tiered',
-					'name' => 'Devices used, tiered',
-					'description' => 'How many devices you use, but with a tiering system',
-					'unitOfMeasureID' => created_uom.id,
-					'chargeType' => 'usage',
+					'name' => 'Bandwidth',
+					'description' => 'Bandwidth consumed',
+					'unitOfMeasureID' => created_uom_2.id,
+					'chargeType' => 'subscription',
 					'upgradeMode' => 'immediate',
 					'downgradeMode' => 'immediate',
 					'defaultQuantity' => 10,
-					'tiers' => tiers_for_tiered_component_1
+					'tiers' => tiers_for_tiered_component_2
 				}))
 
 
 			# create product rate plan, using pricing components and product
 			prp = BillForward::ProductRatePlan.new({
 				'currency' => 'USD',
-				'name' => 'A sound plan',
+				'name' => 'Sound Plan',
 				'pricingComponents' => pricing_components,
 				'productID' => created_product.id,
 				})
@@ -189,19 +209,19 @@ describe BillForward::Subscription do
 
 					pricing_components = @created_prp.pricingComponents
 					# get references to each pricing component we made
-					flat_pricing_component_1 = pricing_components[0]
-					tiered_pricing_component_1 = pricing_components[1]
+					tiered_pricing_component_1 = pricing_components[0]
+					tiered_pricing_component_2 = pricing_components[1]
 
 					# create PricingComponentValue instances for every PricingComponent on the PRP
 					pricing_component_values = Array.new
 					pricing_component_values.push(
 						BillForward::PricingComponentValue.new({
-							'pricingComponentID' => flat_pricing_component_1.id,
-							'value' => 1,
+							'pricingComponentID' => tiered_pricing_component_1.id,
+							'value' => 13,
 						}),
 						BillForward::PricingComponentValue.new({
-							'pricingComponentID' => tiered_pricing_component_1.id,
-							'value' => 5,
+							'pricingComponentID' => tiered_pricing_component_2.id,
+							'value' => 13,
 						}))
 
 
@@ -227,12 +247,15 @@ describe BillForward::Subscription do
 				it 'can be gotten' do
 					gotten_subscription = BillForward::Subscription.get_by_id(subscription.id)
 					expect(gotten_subscription['@type']).to eq(BillForward::Subscription.resource_path.entity_name)
+					puts gotten_subscription.id
 				end
 				it 'can be activated' do
 					expect(subscription['state']).to eq('Provisioned')
 					updated_subscription = subscription.activate
 
 					expect(updated_subscription['state']).to eq('AwaitingPayment')
+
+					puts updated_subscription.id
 				end
 			end
 		end
