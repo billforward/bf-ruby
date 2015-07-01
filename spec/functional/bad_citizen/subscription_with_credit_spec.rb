@@ -247,15 +247,12 @@ describe BillForward::Subscription do
 				it 'can be gotten' do
 					gotten_subscription = BillForward::Subscription.get_by_id(subscription.id)
 					expect(gotten_subscription['@type']).to eq(BillForward::Subscription.resource_path.entity_name)
-					puts gotten_subscription.id
 				end
 				it 'can be activated' do
 					expect(subscription['state']).to eq('Provisioned')
 					updated_subscription = subscription.activate
 
 					expect(updated_subscription['state']).to eq('AwaitingPayment')
-
-					puts updated_subscription.id
 				end
 			end
 		end
