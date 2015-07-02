@@ -80,7 +80,8 @@ module BillForward
 				payload = nil;
 				haspayload = @@payload_verbs.include?(verb)
 				if haspayload
-          			payload = args.shift
+          			payload_typed = args.shift
+          			payload = payload_typed.serialize
           		end
 
 				query_params = args.shift
@@ -100,16 +101,25 @@ module BillForward
 				client.send(method.intern, *arguments)
 			end
 
-			def request_many(*args)
+			def request_many_heterotyped(*args)
+				response_type = args.shift
 				arguments = ['many']+args
 				results = self.send(:request_ambiguous, *arguments)
-				self.build_entity_array(results)
+				response_type.build_entity_array(results)
 			end
 
-			def request_first(*args)
+			def request_first_heterotyped(*args)
+				response_type = args.shift
 				arguments = ['first']+args
 				result = self.send(:request_ambiguous, *arguments)
-				self.build_entity(result)
+				response_type.build_entity(result)
+			end
+
+			['first', 'many'].each do |method|
+				define_method("request_#{method}".intern) do |*args|
+					arguments = [self]+args
+					self.send("request_#{method}_heterotyped".intern, *arguments)
+				end
 			end
 
 			def get_by_id(id, query_params = {}, custom_client = nil)
