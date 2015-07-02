@@ -40,7 +40,7 @@ module BillForward
   class Client
     @@payload_verbs = ['post', 'put']
     @@no_payload_verbs = ['get', 'delete']
-    @@all_verbs = @@payload_verbs.concat(@@no_payload_verbs)
+    @@all_verbs = @@payload_verbs + @@no_payload_verbs
 
     attr_accessor :host
     attr_accessor :use_logging
@@ -154,7 +154,7 @@ module BillForward
         query_params = args.shift || {}
         TypeCheck.verifyObj(Hash, query_params, 'query_params')
 
-        self.send(:request, [verb, url, payload, query_params])
+        self.send(:request, *[verb, url, query_params, payload])
       end
       define_method("#{action}_first".intern) do |*args|
         response = self.send(action.intern, *args)
