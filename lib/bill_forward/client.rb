@@ -194,6 +194,7 @@ module BillForward
 
     alias_method :retire, :delete
     alias_method :retire_first, :delete_first
+    alias_method :get_results, :get_many_typeless
 
     private
       def uri_encode(params = {})
@@ -209,10 +210,25 @@ module BillForward
       end
 
       def request(verb, url, params={}, payload=nil)
-        full_url = "#{@host}#{url}"
+        qualified_url = "#{@host}#{url}"
+
+        split = qualified_url.split('?')
+        distilled_url = split.first
+        override_params = split.length > 1 \
+        ? split[1] \
+        : ''
+
+        param_string = override_params.empty? \
+        ? ((params && params.any?) \
+          ? uri_encode(params) \
+          : '') \
+        : override_params
 
         # Make params into query parameters
-        full_url = "#{full_url}?#{uri_encode(params)}" if params && params.any?
+        full_url = param_string.empty? \
+        ? distilled_url \
+        : [distilled_url, param_string].join('?')
+
         token = get_token
 
         log "#{verb} #{url}"
