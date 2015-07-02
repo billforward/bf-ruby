@@ -26,35 +26,12 @@ module BillForward
 			unserialize_all state_params
 		end
 
+		@@payload_verbs = ['post', 'put']
+		@@no_payload_verbs = ['get', 'delete']
+		@@all_verbs = @@payload_verbs + @@no_payload_verbs
+
 		class << self
 			attr_accessor :resource_path
-
-			def get_by_id(id, query_params = {}, custom_client = nil)
-				client = client.nil? ? singleton_client : custom_client
-
-				raise ArgumentError.new("id cannot be nil") if id.nil?
-				TypeCheck.verifyObj(Hash, query_params, 'query_params')
-
-				route = resource_path.path
-				endpoint = ''
-				url_full = "#{route}/#{endpoint}#{id}"
-
-				# self.get_first(client, url_full, query_params)
-				result = client.get_first(self, url_full, query_params)
-			end
-
-			def get_all(query_params = {}, custom_client = nil)
-				client = client.nil? ? singleton_client : custom_client
-				
-				TypeCheck.verifyObj(Hash, query_params, 'query_params')
-
-				route = resource_path.path
-				endpoint = ''
-				url_full = "#{route}/#{endpoint}"
-
-				# self.get_many(client, url_full, query_params)
-				results = client.get_many(self, url_full, query_params)
-			end
 
 			def singleton_client
 				Client.default_client
@@ -95,23 +72,98 @@ module BillForward
 				new_entity
 			end
 
-			# payload_verbs = ['post', 'put']
-		 #    no_payload_verbs = ['get', 'delete']
-		 #    all_verbs = payload_verbs + no_payload_verbs
+			def request_ambiguous(*args)
+				plurality = args.shift
+				verb = args.shift
+				endpoint = args.shift
 
-			# all_verbs.each do |action|
-			# 	define_method("#{action}_first".intern) do |*args|
-			# 		client = args.shift
-			# 		response_entity_class = self
-			# 		client.send("#{action}_first".intern, *args)
-			# 	end
-			# 	define_method("#{action}_many".intern) do |*args|
-			# 		client = args.shift
-			# 		response_entity_class = self
-			# 		client.send("#{action}_many".intern, *args)
-			# 	end
-			# end
+				payload = nil;
+				haspayload = @@payload_verbs.include?(verb)
+				if (haspayload)
+          			payload_typed = args.shift
+          			payload = payload_typed.serialize
+          		end
+
+				query_params = args.shift
+				custom_client = args.shift
+
+				client = client.nil? \
+				? singleton_client \
+				: custom_client
+
+				route = resource_path.path
+				url_full = "#{route}/#{endpoint}"
+				method = "#{verb}_#{plurality}"
+
+				arguments = [url_full, query_params]
+				arguments.insert(1, payload) if haspayload
+
+				# puts verb
+
+				client.send(method.intern, *arguments)
+			end
+
+			def request_many_heterotyped(*args)
+				response_type = args.shift
+				arguments = ['many']+args
+				results = self.send(:request_ambiguous, *arguments)
+				response_type.build_entity_array(results)
+			end
+
+			def request_first_heterotyped(*args)
+				response_type = args.shift
+				arguments = ['first']+args
+				result = self.send(:request_ambiguous, *arguments)
+				response_type.build_entity(result)
+			end
+
+			['first', 'many'].each do |method|
+				define_method("request_#{method}".intern) do |*args|
+					arguments = [self]+args
+					self.send("request_#{method}_heterotyped".intern, *arguments)
+				end
+			end
+
+			def get_by_id(id, query_params = {}, custom_client = nil)
+				raise ArgumentError.new("id cannot be nil") if id.nil?
+
+				endpoint = sprintf('%s',
+					ERB::Util.url_encode(id)
+					)
+
+				self.request_first('get', endpoint, query_params, custom_client)
+			end
+
+			def get_all(query_params = {}, custom_client = nil)
+				self.request_many('get', '', query_params, custom_client)
+			end
 		end
+
+		# Asks API to update existing instance of this entity,
+ 		# based on current model.
+	    # 
+	    # @return [self] The updated Entity
+		def save()
+			self.class.request_first('put', '', self, nil, _client)
+		end
+
+		# Asks API to retire existing instance of this entity.
+		# @note Many BillForward entities do not support RETIRE
+		# @note As-yet untested
+	    # 
+	    # @return [self] The retired Entity
+		def delete()
+			self.class.request_first('delete', '', nil, _client)
+		end
+
+		def create(entity = nil)
+			entity = self.new if entity.nil?
+			TypeCheck.verifyObj(self, entity, 'entity')
+
+			self.class.request_first('post', '', entity, nil, entity._client)
+		end
+
+		alias_method :retire, :delete
 
 		def method_missing(method_id, *arguments, &block)
 			# no call to super; our criteria is all keys.
