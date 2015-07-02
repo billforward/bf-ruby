@@ -79,7 +79,7 @@ module BillForward
 
 				payload = nil;
 				haspayload = @@payload_verbs.include?(verb)
-				if haspayload
+				if (haspayload)
           			payload_typed = args.shift
           			payload = payload_typed.serialize
           		end
@@ -97,6 +97,8 @@ module BillForward
 
 				arguments = [url_full, query_params]
 				arguments.insert(1, payload) if haspayload
+
+				# puts verb
 
 				client.send(method.intern, *arguments)
 			end
@@ -133,10 +135,7 @@ module BillForward
 			end
 
 			def get_all(query_params = {}, custom_client = nil)
-
-				endpoint = ''
-
-				self.request_many('get', endpoint, query_params, custom_client)
+				self.request_many('get', '', query_params, custom_client)
 			end
 		end
 
