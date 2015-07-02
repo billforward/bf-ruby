@@ -114,7 +114,6 @@ module BillForward
 
 			def get_by_id(id, query_params = {}, custom_client = nil)
 				raise ArgumentError.new("id cannot be nil") if id.nil?
-				TypeCheck.verifyObj(Hash, query_params, 'query_params')
 
 				endpoint = sprintf('%s',
 					ERB::Util.url_encode(id)
@@ -123,8 +122,7 @@ module BillForward
 				self.request_first('get', endpoint, query_params, custom_client)
 			end
 
-			def get_all(query_params = {}, custom_client = nil)				
-				TypeCheck.verifyObj(Hash, query_params, 'query_params')
+			def get_all(query_params = {}, custom_client = nil)
 
 				endpoint = ''
 
