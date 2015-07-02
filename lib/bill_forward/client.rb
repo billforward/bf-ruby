@@ -154,10 +154,10 @@ module BillForward
         query_params = args.shift || {}
         TypeCheck.verifyObj(Hash, query_params, 'query_params')
 
-        request.send([verb, url, payload, query_params])
+        self.send(:request, [verb, url, payload, query_params])
       end
       define_method("#{action}_first".intern) do |*args|
-        response = action.send(*args)
+        response = self.send(action.intern, *args)
 
         raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
 
