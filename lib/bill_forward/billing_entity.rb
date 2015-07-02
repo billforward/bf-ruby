@@ -39,10 +39,8 @@ module BillForward
 				endpoint = ''
 				url_full = "#{route}/#{endpoint}#{id}"
 
-				result = client.get_first(url_full, query_params)
-
-				# maybe use build_entity here for consistency
-				self.build_entity(result)
+				# self.get_first(client, url_full, query_params)
+				result = client.get_first(self, url_full, query_params)
 			end
 
 			def get_all(query_params = {}, custom_client = nil)
@@ -54,15 +52,14 @@ module BillForward
 				endpoint = ''
 				url_full = "#{route}/#{endpoint}"
 
-				results = client.get_many(url_full, query_params)
-
-				self.build_entity_array(results)
+				# self.get_many(client, url_full, query_params)
+				results = client.get_many(self, url_full, query_params)
 			end
 
 			def singleton_client
 				Client.default_client
 			end
-			
+
 			def build_entity_array(entity_hashes)
 				TypeCheck.verifyObj(Array, entity_hashes, 'entity_hashes')
 
@@ -97,6 +94,23 @@ module BillForward
 
 				new_entity
 			end
+
+			# payload_verbs = ['post', 'put']
+		 #    no_payload_verbs = ['get', 'delete']
+		 #    all_verbs = payload_verbs + no_payload_verbs
+
+			# all_verbs.each do |action|
+			# 	define_method("#{action}_first".intern) do |*args|
+			# 		client = args.shift
+			# 		response_entity_class = self
+			# 		client.send("#{action}_first".intern, *args)
+			# 	end
+			# 	define_method("#{action}_many".intern) do |*args|
+			# 		client = args.shift
+			# 		response_entity_class = self
+			# 		client.send("#{action}_many".intern, *args)
+			# 	end
+			# end
 		end
 
 		def method_missing(method_id, *arguments, &block)

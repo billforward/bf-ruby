@@ -51,6 +51,8 @@ module BillForward
 
     # provide access to self statics
     class << self
+      attr_accessor :all_verbs
+
       # default client is a singleton client
       attr_reader :default_client
       def default_client=(default_client)
@@ -70,6 +72,7 @@ module BillForward
         @default_client
       end
     end
+    @all_verbs = @@all_verbs
 
 
     # Constructs a client, and sets it to be used as the default client.
@@ -159,7 +162,7 @@ module BillForward
 
         self.send(:request, *[verb, url, query_params, payload])
       end
-      define_method("#{action}_many".intern) do |*args|
+      define_method("#{action}_many_typeless".intern) do |*args|
         response = self.send(action.intern, *args)
         results = response["results"]
         if results.nil?
@@ -167,14 +170,25 @@ module BillForward
         end
         results
       end
-      define_method("#{action}_first".intern) do |*args|
-        results = self.send("#{action}_many".intern, *args)
+      define_method("#{action}_many".intern) do |*args|
+        response_entity_class = args.shift
+        results = self.send("#{action}_many_typeless".intern, *args)
+        response_entity_class.build_entity_array(results)
+      end
+
+      define_method("#{action}_first_typeless".intern) do |*args|
+        results = self.send("#{action}_many_typeless".intern, *args)
 
         if results.nil? or results.length == 0
           raise IndexError.new("Cannot get first; request returned empty list of results.")
         end
 
         results.first
+      end
+      define_method("#{action}_first".intern) do |*args|
+        response_entity_class = args.shift
+        result = self.send("#{action}_first_typeless".intern, *args)
+        response_entity_class.build_entity(result)
       end
     end
 
