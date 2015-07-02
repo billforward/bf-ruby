@@ -1,3 +1,4 @@
+require 'bundler/setup'
 require 'bill_forward'
 
 my_client = BillForward::Client.new(

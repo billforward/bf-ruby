@@ -159,7 +159,9 @@ Maybe you find yourself running the above two snippets very often.
 You can invoke them more simply by running `tools/local_bundle_install.sh`.
 
 ### Invoking unpacked gem
-The `scratch/` directory contains a Gemfile that includes this repo's gem, without requiring a `gem install` any time you change code (however you will still need to use `bundle`).
+The `scratch/` directory contains a Gemfile that includes this repo's gem, without having to repeatedly bundle and gem build & install upon changes.
+
+Run `bundle` once in the `scratch/` directory to pull in its dependent gems.
 
 You can recruit this Gemfile using a file like as `scratch/scratch.example.rb`. 
 Make your own `scratch/scratch.rb` (this particular path is exempt from version control), or any file ending in `.scratch.rb` to play around with this gem locally.
