@@ -25,4 +25,5 @@ mkmf.log
 onelinechange.bat
 twolinechange.bat
 spec/test_constants.rb
-scratch.rb
+scratch/scratch.rb
+*.scratch.rb
