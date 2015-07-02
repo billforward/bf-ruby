@@ -153,7 +153,7 @@ module BillForward
       response["results"][0]
     end
 
-    def execute_request(method, url, token, payload=nil)
+    def execute_request(verb, url, token, payload=nil)
       # Enable Fiddler:
       if @use_proxy
         RestClient.proxy = @proxy_url
@@ -166,20 +166,17 @@ module BillForward
         :Authorization => "Bearer #{token}",
         :accept => 'application/json'
       }
-      if (method == 'post' || method == 'put')
-        options.update(:content_type => 'application/json'
-        )
+
+      haspayload = ['post', 'put'].include?(verb)
+
+      if (haspayload)
+        options.update(:content_type => 'application/json')
       end
 
-      if (method == 'post')
-        RestClient.post(url, payload, options)
-      elsif (method == 'put')
-        RestClient.put(url, payload, options)
-      elsif (method == 'get')
-        RestClient.get(url, options)
-      elsif (method == 'delete')
-        RestClient.delete(url, options)
-      end
+      args = [url, options]
+      args.insert(1, payload) if haspayload
+
+      RestClient.send(verb.intern, *args)
     end
 
     def get(url, params={})
