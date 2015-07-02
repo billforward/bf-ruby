@@ -38,6 +38,10 @@ module BillForward
   end
 
   class Client
+    @@payload_verbs = ['post', 'put']
+    @@no_payload_verbs = ['get', 'delete']
+    @@all_verbs = @@payload_verbs.concat(@@no_payload_verbs)
+
     attr_accessor :host
     attr_accessor :use_logging
     attr_accessor :api_token
@@ -111,48 +115,6 @@ module BillForward
       @authorization = nil
     end
 
-
-
-    # def get_results(url)
-    #   response = get(url)
-
-    #   return [] if response.nil? or response["results"].length == 0
-
-    #   response["results"]
-    # end
-
-    def get_first(url, params={})
-      response = get(url, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def retire_first(url, params={})
-      response = retire(url, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def put_first(url, data, params={})
-      response = put(url, data, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def post_first(url, data, params={})
-      response = post(url, data, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
     def execute_request(verb, url, token, payload=nil)
       # Enable Fiddler:
       if @use_proxy
@@ -167,7 +129,7 @@ module BillForward
         :accept => 'application/json'
       }
 
-      haspayload = ['post', 'put'].include?(verb)
+      haspayload = @@payload_verbs.include?(verb)
 
       if (haspayload)
         options.update(:content_type => 'application/json')
@@ -179,27 +141,32 @@ module BillForward
       RestClient.send(verb.intern, *args)
     end
 
-    def get(url, params={})
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('get', url, params, nil)
+    @@all_verbs.each do |action|
+      define_method(action.intern) do |*args|
+        verb = action
+        url = args.shift
+        payload = nil
+        if @@payload_verbs.include?(verb)
+          payload = args.shift
+          TypeCheck.verifyObj(String, payload, 'payload')
+        end
+
+        query_params = args.shift || {}
+        TypeCheck.verifyObj(Hash, query_params, 'query_params')
+
+        request.send([verb, url, payload, query_params])
+      end
+      define_method("#{action}_first".intern) do |*args|
+        response = action.send(*args)
+
+        raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
+
+        response["results"].first
+      end
     end
 
-    def retire(url, params={})
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('delete', url, params, nil)
-    end
-
-    def post(url, data, params={})
-      TypeCheck.verifyObj(String, data, 'data')
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('post', url, params, data)
-    end
-
-    def put(url, data, params={})
-      TypeCheck.verifyObj(String, data, 'data')
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('put', url, params, data)
-    end
+    alias_method :retire, :delete
+    alias_method :retire_first, :delete_first
 
     private
       def uri_encode(params = {})
@@ -216,18 +183,18 @@ module BillForward
         
       end
 
-      def request(method, url, params={}, payload=nil)
+      def request(verb, url, params={}, payload=nil)
         full_url = "#{@host}#{url}"
 
         # Make params into query parameters
         full_url += "?#{uri_encode(params)}" if params && params.any?
         token = get_token
 
-        log "#{method} #{url}"
+        log "#{verb} #{url}"
         log "token: #{token}"
 
         begin
-          response = execute_request(method, full_url, token, payload)
+          response = execute_request(verb, full_url, token, payload)
 
           parsed = JSON.parse(response.to_str)
           pretty = JSON.pretty_generate(parsed)
