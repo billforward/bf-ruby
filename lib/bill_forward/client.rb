@@ -33,6 +33,9 @@ module BillForward
   class ApiAuthorizationError < ApiError
   end
 
+  class ApiUnexpectedResponseFormatError < ApiError
+  end
+
   class ApiTokenException < ClientException
 
   end
@@ -156,12 +159,22 @@ module BillForward
 
         self.send(:request, *[verb, url, query_params, payload])
       end
-      define_method("#{action}_first".intern) do |*args|
+      define_method("#{action}_many".intern) do |*args|
         response = self.send(action.intern, *args)
+        results = response["results"]
+        if results.nil?
+          raise ApiUnexpectedResponseFormatError.new("Response did not contain a results array.")
+        end
+        results
+      end
+      define_method("#{action}_first".intern) do |*args|
+        results = self.send("#{action}_many".intern, *args)
 
-        raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
+        if results.nil? or results.length == 0
+          raise IndexError.new("Cannot get first; request returned empty list of results.")
+        end
 
-        response["results"].first
+        results.first
       end
     end
 
@@ -172,12 +185,10 @@ module BillForward
       def uri_encode(params = {})
         TypeCheck.verifyObj(Hash, params, 'params')
 
-        encoded_params = Array.new
-
-        params.each do |key, value|
-          encoded_key = ERB::Util.url_encode key
-          encoded_value = ERB::Util.url_encode value
-          encoded_params.push("#{encoded_key}=#{encoded_value}")
+        encoded_params = params.reduce([]) do |accumulator, (iterand_key, iterand_value)|
+          encoded_key = ERB::Util.url_encode iterand_key
+          encoded_value = ERB::Util.url_encode iterand_value
+          accumulator + ["#{encoded_key}=#{encoded_value}"]
         end
         query = encoded_params.join '&'
         
@@ -187,7 +198,7 @@ module BillForward
         full_url = "#{@host}#{url}"
 
         # Make params into query parameters
-        full_url += "?#{uri_encode(params)}" if params && params.any?
+        full_url = "#{full_url}?#{uri_encode(params)}" if params && params.any?
         token = get_token
 
         log "#{verb} #{url}"
