@@ -155,6 +155,26 @@ gem build bill_forward.gemspec
 gem install bill_forward
 ```
 
+Maybe you find yourself running the above two snippets very often. 
+You can invoke them more simply by running `tools/local_bundle_install.sh`.
+
+### Running scratch files
+Make a file named `scratch.rb` in the root of the repository (it will elude version control).
+
+In Sublime I use such a build system to run these:
+
+```json
+{
+  "env": {
+    "PATH":"${HOME}/.rvm/bin:${PATH}"
+  },
+  "cmd": ["rvm-auto-ruby", "-rubygems", "${file}" ],
+  "selector": "source.ruby"
+}
+```
+
+You'll find this build system in `tools/Ruby\ legacy.sublime-build`.
+
 ### Running tests
 Development is decidedly test-driven.
 
