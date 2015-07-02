@@ -26,53 +26,144 @@ module BillForward
 			unserialize_all state_params
 		end
 
+		@@payload_verbs = ['post', 'put']
+		@@no_payload_verbs = ['get', 'delete']
+		@@all_verbs = @@payload_verbs + @@no_payload_verbs
+
 		class << self
 			attr_accessor :resource_path
-
-			def get_by_id(id, query_params = {}, customClient = nil)
-				client = customClient
-				client = singleton_client if client.nil?
-
-				raise ArgumentError.new("id cannot be nil") if id.nil?
-				TypeCheck.verifyObj(Hash, query_params, 'query_params')
-
-				route = resource_path.path
-				endpoint = ''
-				url_full = "#{route}/#{endpoint}#{id}"
-
-				response = client.get_first(url_full, query_params)
-
-				# maybe use build_entity here for consistency
-				self.new(response, client)
-			end
-
-			def get_all(query_params = {}, customClient = nil)
-				client = customClient
-				client = singleton_client if client.nil?
-				
-				TypeCheck.verifyObj(Hash, query_params, 'query_params')
-
-				route = resource_path.path
-				endpoint = ''
-				url_full = "#{route}/#{endpoint}"
-
-				response = client.get(url_full, query_params)
-				results = response["results"]
-
-				# maybe use build_entity_array here for consistency
-				entity_array = Array.new
-				# maybe it's an empty array, but that's okay too.
-				results.each do |value|
-					entity = self.new(value, client)
-					entity_array.push(entity)
-				end
-				entity_array
-			end
 
 			def singleton_client
 				Client.default_client
 			end
+
+			def build_entity_array(entity_hashes)
+				TypeCheck.verifyObj(Array, entity_hashes, 'entity_hashes')
+
+				entity_hashes.map do |hash|
+					self.build_entity(hash)
+				end
+			end
+
+			def build_entity(entity)
+				if entity.is_a? Hash
+					# either we are given a serialized entity
+					# we must unserialize it
+
+					# this entity should the same client as we do
+					client = @_client
+
+					return self.new(entity, client)
+				end
+				if entity.is_a? self
+					# or we are given an already-constructed entity
+					# just return it as-is
+
+					# for consistency we might want to set this entity to use the same client as us. Let's not for now.
+					return entity
+				end
+				if
+					expectedClassName = self.name
+					actualClassName = entity.class.name
+					raise TypeError.new("Expected instance of either: 'Hash' or '#{expectedClassName}' at argument 'entity'. "+
+						"Instead received: '#{actualClassName}'")
+				end
+
+				new_entity
+			end
+
+			def request_ambiguous(*args)
+				plurality = args.shift
+				verb = args.shift
+				endpoint = args.shift
+
+				payload = nil;
+				haspayload = @@payload_verbs.include?(verb)
+				if (haspayload)
+          			payload_typed = args.shift
+          			payload = payload_typed.serialize
+          		end
+
+				query_params = args.shift
+				custom_client = args.shift
+
+				client = client.nil? \
+				? singleton_client \
+				: custom_client
+
+				route = resource_path.path
+				url_full = "#{route}/#{endpoint}"
+				method = "#{verb}_#{plurality}"
+
+				arguments = [url_full, query_params]
+				arguments.insert(1, payload) if haspayload
+
+				# puts verb
+
+				client.send(method.intern, *arguments)
+			end
+
+			def request_many_heterotyped(*args)
+				response_type = args.shift
+				arguments = ['many']+args
+				results = self.send(:request_ambiguous, *arguments)
+				response_type.build_entity_array(results)
+			end
+
+			def request_first_heterotyped(*args)
+				response_type = args.shift
+				arguments = ['first']+args
+				result = self.send(:request_ambiguous, *arguments)
+				response_type.build_entity(result)
+			end
+
+			['first', 'many'].each do |method|
+				define_method("request_#{method}".intern) do |*args|
+					arguments = [self]+args
+					self.send("request_#{method}_heterotyped".intern, *arguments)
+				end
+			end
+
+			def get_by_id(id, query_params = {}, custom_client = nil)
+				raise ArgumentError.new("id cannot be nil") if id.nil?
+
+				endpoint = sprintf('%s',
+					ERB::Util.url_encode(id)
+					)
+
+				self.request_first('get', endpoint, query_params, custom_client)
+			end
+
+			def get_all(query_params = {}, custom_client = nil)
+				self.request_many('get', '', query_params, custom_client)
+			end
 		end
+
+		# Asks API to update existing instance of this entity,
+ 		# based on current model.
+	    # 
+	    # @return [self] The updated Entity
+		def save()
+			self.class.request_first('put', '', self, nil, _client)
+		end
+
+		# Asks API to retire existing instance of this entity.
+		# @note Many BillForward entities do not support RETIRE
+		# @note As-yet untested
+	    # 
+	    # @return [self] The retired Entity
+		def delete()
+			self.class.request_first('delete', '', nil, _client)
+		end
+
+		def create(entity = nil)
+			entity = self.new if entity.nil?
+			TypeCheck.verifyObj(self, entity, 'entity')
+
+			self.class.request_first('post', '', entity, nil, entity._client)
+		end
+
+		alias_method :retire, :delete
 
 		def method_missing(method_id, *arguments, &block)
 			# no call to super; our criteria is all keys.
@@ -188,9 +279,10 @@ module BillForward
 
 		def unserialize_one(value)
 			if value.is_a? Hash
-				value = unserialize_hash(value)
-			elsif value.is_a? Array
-				value = unserialize_array(value)
+				return unserialize_hash(value)
+			end
+			if value.is_a? Array
+				return unserialize_array(value)
 			end
 			value
 		end
@@ -204,7 +296,7 @@ module BillForward
 			@_registered_entities[key] = entity_class
 			# if key exists in the provided hash, add it to current entity's model
 			if hash.has_key? key
-				entity = build_entity(entity_class, hash[key])
+				entity = entity_class.build_entity(hash[key])
 				set_state_param(key, entity)
 			end
 		end
@@ -218,46 +310,9 @@ module BillForward
 			@_registered_entity_arrays[key] = entity_class
 			# if key exists in the provided hash, add it to current entity's model
 			if hash.has_key? key
-				entities = build_entity_array(entity_class, hash[key])
+				entities = entity_class.build_entity_array(hash[key])
 				set_state_param(key, entities)
 			end
-		end
-
-		def build_entity_array(entity_class, entity_hashes)
-			TypeCheck.verifyObj(Array, entity_hashes, 'entity_hashes')
-
-			entity_array = Array.new
-			# maybe it's an empty array, but that's okay too.
-			entity_hashes.each do |value|
-				new_entity = build_entity(entity_class, value)
-				entity_array.push(new_entity)
-			end
-			entity_array
-		end
-
-		def build_entity(entity_class, entity)
-			if entity.is_a? Hash
-				# either we are given a serialized entity
-				# we must unserialize it
-
-				# this entity should the same client as we do
-				client = @_client
-
-				new_entity = entity_class.new(entity, client)
-			elsif entity.is_a? entity_class
-				# or we are given an already-constructed entity
-				# just return it as-is
-
-				# for consistency we might want to set this entity to use the same client as us. Let's not for now.
-				new_entity = entity
-			else
-				expectedClassName = entity_class.name
-				actualClassName = entity.class.name
-				raise TypeError.new("Expected instance of either: 'Hash' or '#{expectedClassName}' at argument 'entity'. "+
-					"Instead received: '#{actualClassName}'")
-			end
-
-			new_entity
 		end
 	end
 end

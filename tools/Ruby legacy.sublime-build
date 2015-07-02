@@ -1,0 +1,7 @@
+{
+  "env": {
+    "PATH":"${HOME}/.rvm/bin:${PATH}"
+  },
+  "cmd": ["rvm-auto-ruby", "-rubygems", "${file}" ],
+  "selector": "source.ruby"
+}

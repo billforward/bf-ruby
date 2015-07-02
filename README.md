@@ -155,6 +155,31 @@ gem build bill_forward.gemspec
 gem install bill_forward
 ```
 
+Maybe you find yourself running the above two snippets very often. 
+You can invoke them more simply by running `tools/local_bundle_install.sh`.
+
+### Invoking unpacked gem
+The `scratch/` directory contains a Gemfile that includes this repo's gem, without having to repeatedly bundle and gem build & install upon changes.
+
+Run `bundle` once in the `scratch/` directory to pull in its dependent gems.
+
+You can recruit this Gemfile using a file like as `scratch/scratch.example.rb`. 
+Make your own `scratch/scratch.rb` (this particular path is exempt from version control), or any file ending in `.scratch.rb` to play around with this gem locally.
+
+In Sublime I use such a build system to run `.rb` scratch files:
+
+```json
+{
+  "env": {
+    "PATH":"${HOME}/.rvm/bin:${PATH}"
+  },
+  "cmd": ["rvm-auto-ruby", "-rubygems", "${file}" ],
+  "selector": "source.ruby"
+}
+```
+
+You'll find this build system in `tools/Ruby\ legacy.sublime-build`.
+
 ### Running tests
 Development is decidedly test-driven.
 

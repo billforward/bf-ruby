@@ -33,17 +33,26 @@ module BillForward
   class ApiAuthorizationError < ApiError
   end
 
+  class ApiUnexpectedResponseFormatError < ApiError
+  end
+
   class ApiTokenException < ClientException
 
   end
 
   class Client
+    @@payload_verbs = ['post', 'put']
+    @@no_payload_verbs = ['get', 'delete']
+    @@all_verbs = @@payload_verbs + @@no_payload_verbs
+
     attr_accessor :host
     attr_accessor :use_logging
     attr_accessor :api_token
 
     # provide access to self statics
     class << self
+      attr_accessor :all_verbs
+
       # default client is a singleton client
       attr_reader :default_client
       def default_client=(default_client)
@@ -63,6 +72,7 @@ module BillForward
         @default_client
       end
     end
+    @all_verbs = @@all_verbs
 
 
     # Constructs a client, and sets it to be used as the default client.
@@ -111,49 +121,7 @@ module BillForward
       @authorization = nil
     end
 
-
-
-    # def get_results(url)
-    #   response = get(url)
-
-    #   return [] if response.nil? or response["results"].length == 0
-
-    #   response["results"]
-    # end
-
-    def get_first(url, params={})
-      response = get(url, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def retire_first(url, params={})
-      response = retire(url, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def put_first(url, data, params={})
-      response = put(url, data, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def post_first(url, data, params={})
-      response = post(url, data, params)
-
-      raise IndexError.new("Cannot get first; request returned empty list of results.") if response.nil? or response["results"].length == 0
-
-      response["results"][0]
-    end
-
-    def execute_request(method, url, token, payload=nil)
+    def execute_request(verb, url, token, payload=nil)
       # Enable Fiddler:
       if @use_proxy
         RestClient.proxy = @proxy_url
@@ -166,71 +134,98 @@ module BillForward
         :Authorization => "Bearer #{token}",
         :accept => 'application/json'
       }
-      if (method == 'post' || method == 'put')
-        options.update(:content_type => 'application/json'
-        )
+
+      haspayload = @@payload_verbs.include?(verb)
+
+      if (haspayload)
+        options.update(:content_type => 'application/json')
       end
 
-      if (method == 'post')
-        RestClient.post(url, payload, options)
-      elsif (method == 'put')
-        RestClient.put(url, payload, options)
-      elsif (method == 'get')
-        RestClient.get(url, options)
-      elsif (method == 'delete')
-        RestClient.delete(url, options)
+      args = [url, options]
+      args.insert(1, payload) if haspayload
+
+      RestClient.send(verb.intern, *args)
+    end
+
+    @@all_verbs.each do |action|
+      define_method(action.intern) do |*args|
+        verb = action
+        url = args.shift
+        payload = nil
+        if @@payload_verbs.include?(verb)
+          payload = args.shift
+          TypeCheck.verifyObj(String, payload, 'payload')
+        end
+
+        query_params = args.shift || {}
+        TypeCheck.verifyObj(Hash, query_params, 'query_params')
+
+        self.send(:request, *[verb, url, query_params, payload])
+      end
+      define_method("#{action}_many".intern) do |*args|
+        response = self.send(action.intern, *args)
+        results = response["results"]
+        if results.nil?
+          raise ApiUnexpectedResponseFormatError.new("Response did not contain a results array.")
+        end
+        results
+      end
+
+      define_method("#{action}_first".intern) do |*args|
+        results = self.send("#{action}_many".intern, *args)
+
+        if results.nil? or results.length == 0
+          raise IndexError.new("Cannot get first; request returned empty list of results.")
+        end
+
+        results.first
       end
     end
 
-    def get(url, params={})
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('get', url, params, nil)
-    end
-
-    def retire(url, params={})
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('delete', url, params, nil)
-    end
-
-    def post(url, data, params={})
-      TypeCheck.verifyObj(String, data, 'data')
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('post', url, params, data)
-    end
-
-    def put(url, data, params={})
-      TypeCheck.verifyObj(String, data, 'data')
-      TypeCheck.verifyObj(Hash, params, 'params')
-      request('put', url, params, data)
-    end
+    alias_method :retire, :delete
+    alias_method :retire_first, :delete_first
+    alias_method :get_results, :get_many
 
     private
       def uri_encode(params = {})
         TypeCheck.verifyObj(Hash, params, 'params')
 
-        encoded_params = Array.new
-
-        params.each do |key, value|
-          encoded_key = ERB::Util.url_encode key
-          encoded_value = ERB::Util.url_encode value
-          encoded_params.push("#{encoded_key}=#{encoded_value}")
+        encoded_params = params.reduce([]) do |accumulator, (iterand_key, iterand_value)|
+          encoded_key = ERB::Util.url_encode iterand_key
+          encoded_value = ERB::Util.url_encode iterand_value
+          accumulator + ["#{encoded_key}=#{encoded_value}"]
         end
         query = encoded_params.join '&'
         
       end
 
-      def request(method, url, params={}, payload=nil)
-        full_url = "#{@host}#{url}"
+      def request(verb, url, params={}, payload=nil)
+        qualified_url = "#{@host}#{url}"
+
+        split = qualified_url.split('?')
+        distilled_url = split.first
+        override_params = split.length > 1 \
+        ? split[1] \
+        : ''
+
+        param_string = override_params.empty? \
+        ? ((params && params.any?) \
+          ? uri_encode(params) \
+          : '') \
+        : override_params
 
         # Make params into query parameters
-        full_url += "?#{uri_encode(params)}" if params && params.any?
+        full_url = param_string.empty? \
+        ? distilled_url \
+        : [distilled_url, param_string].join('?')
+
         token = get_token
 
-        log "#{method} #{url}"
+        log "#{verb} #{url}"
         log "token: #{token}"
 
         begin
-          response = execute_request(method, full_url, token, payload)
+          response = execute_request(verb, full_url, token, payload)
 
           parsed = JSON.parse(response.to_str)
           pretty = JSON.pretty_generate(parsed)
