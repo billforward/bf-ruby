@@ -7,15 +7,22 @@ describe BillForward::Product do
 	end
 	describe '::create' do
 		it 'creates a Product' do
-			product = BillForward::Product.new({
-				'productType' => 'non-recurring',
-				'state' => 'prod',
-				'name' => 'Month of Paracetamoxyfrusebendroneomycin',
-				'description' => 'It can cure the common cold and being struck by lightning',
-				'durationPeriod' => 'days',
-				'duration' => 28,
-				})
-			created_product = BillForward::Product::create(product)
+			product_name = 'Monthly recurring'
+			created_product = nil
+			begin
+				created_product = BillForward::Product.get_by_id product_name
+			rescue IndexError=>e
+				# create a product
+				product = BillForward::Product.new({
+					'productType' => 'recurring',
+					'state' => 'prod',
+					'name' => product_name,
+					'description' => 'Purchaseables to which customer has a non-renewing, monthly entitlement',
+					'durationPeriod' => 'months',
+					'duration' => 1,
+					})
+				created_product = BillForward::Product::create(product)
+			end
 			expect(created_product['@type']).to eq(BillForward::Product.resource_path.entity_name)
 		end
 	end
