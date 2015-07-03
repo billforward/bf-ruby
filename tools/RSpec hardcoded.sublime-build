@@ -1,0 +1,16 @@
+{
+	"env": {
+		"GEM_HOME":     "~/.rvm/gems/ruby-1.8.7-head",
+	    "GEM_PATH":     "~/.rvm/gems/ruby-1.8.7-head:~/.rvm/gems/ruby-1.8.7-head@global",
+	    "MY_RUBY_HOME": "~/.rvm/rubies/ruby-1.8.7-head"
+	},
+	"cmd": ["rspec", "$file"],
+	"file_regex": "# ([A-Za-z:0-9_./ ]+rb):([0-9]+)",
+	"working_dir": "${project_path}",
+	"selector": "source.ruby",
+
+	"windows":
+	{
+	  "cmd": ["rspec.bat", "-I ${file_path}", "$file"]
+	}
+}

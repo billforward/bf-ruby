@@ -216,6 +216,26 @@ module BillForwardTest
 end
 ```
 
+In Sublime I use such a build system to run individual `_spec.rb` specs:
+
+```json
+{
+	"env": {
+		"PATH":"${HOME}/.rvm/bin:${PATH}"
+	},
+	"cmd": ["rvm-auto-ruby","-S", "bundle", "exec", "rspec", "-I ${file_path}", "$file"],
+	"working_dir": "${project_path}",
+	"selector": "source.ruby",
+
+	"windows":
+	{
+	  "cmd": ["rspec.bat", "-I ${file_path}", "$file"]
+	}
+}
+```
+
+You'll find this build system in `tools/RSpec.sublime-build`.
+
 Run main functional tests + offline tests with:
 ```bash
 rake spec_main
