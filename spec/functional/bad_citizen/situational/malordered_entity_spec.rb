@@ -29,7 +29,7 @@ describe BillForward::Amendment do
 				allow(amendment.class).to receive(:resource_path).and_return(BillForward::InvoiceRecalculationAmendment.resource_path)
 			    allow(amendment).to receive(:serialize).and_return(malformed_serialize)
 
-				expect{BillForward::InvoiceRecalculationAmendment.create(amendment)}.to raise_error(BillForward::ApiError, /400/)
+				expect{BillForward::InvoiceRecalculationAmendment.create(amendment)}.to raise_error(BillForward::ApiError, /500/)
 			end
 		end
 	end

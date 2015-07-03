@@ -14,12 +14,16 @@ describe BillForward::PaymentMethod do
 		context 'account exists' do
 			context 'using Authorize.Net payment gateway' do
 				before :all do
+					organisations = BillForward::Organisation.get_mine
+					first_org = organisations.first
+					
 					@created_account = BillForward::Account.create
 					authorize_net_token = BillForward::AuthorizeNetToken.new({
 						'accountID' => @created_account.id,
 						'customerProfileID' => @authorize_net_customer_profile_id,
 						'customerPaymentProfileID' => @authorize_net_customer_payment_profile_id,
 						'lastFourDigits' => @authorize_net_card_last_4_digits,
+						'organizationID' => first_org.id
 						})
 
 					@created_token = BillForward::AuthorizeNetToken.create(authorize_net_token)
@@ -27,6 +31,7 @@ describe BillForward::PaymentMethod do
 				subject (:token) { @created_token }
 				subject (:account) { @created_account }
 				it 'creates a payment method' do
+
 					payment_method = BillForward::PaymentMethod.new({
 						'accountID' => account.id,
 						'linkID' => token.id,
@@ -35,7 +40,7 @@ describe BillForward::PaymentMethod do
 						'gateway' => 'authorizeNet',
 						'userEditable' => 0,
 						'priority' => 100,
-						'reusable' => 1,
+						'reusable' => 1
 						})
 					created_payment_method = BillForward::PaymentMethod::create(payment_method)
 
