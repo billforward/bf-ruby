@@ -1,0 +1,13 @@
+{
+	"env": {
+		"PATH":"${HOME}/.rvm/bin:${PATH}"
+	},
+	"cmd": ["rvm-auto-ruby","-S", "bundle", "exec", "rspec", "-I ${file_path}", "$file"],
+	"working_dir": "${project_path}",
+	"selector": "source.ruby",
+
+	"windows":
+	{
+	  "cmd": ["rspec.bat", "-I ${file_path}", "$file"]
+	}
+}
