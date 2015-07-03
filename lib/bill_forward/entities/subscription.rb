@@ -7,28 +7,14 @@ module BillForward
     @resource_path = BillForward::ResourcePath.new("subscriptions", "subscription")
 
     class << self
-      def get_by_account_id(id, query_params = {}, customClient = nil)
-        client = customClient
-        client = singleton_client if client.nil?
-
+      def get_by_account_id(id, query_params = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
-        TypeCheck.verifyObj(Hash, query_params, 'query_params')
 
-        route = resource_path.path
-        endpoint = 'account'
-        url_full = "#{route}/#{endpoint}/#{id}"
+        endpoint = sprintf('account/%s',
+          ERB::Util.url_encode(id)
+          )
 
-        response = client.get(url_full, query_params)
-        results = response["results"]
-
-        # maybe use build_entity_array here for consistency
-        entity_array = Array.new
-        # maybe it's an empty array, but that's okay too.
-        results.each do |value|
-          entity = self.new(value, client)
-          entity_array.push(entity)
-        end
-        entity_array
+        self.request_many('get', endpoint, query_params, custom_client)
       end
     end
 

@@ -40,58 +40,74 @@ describe BillForward::Subscription do
 				})
 			created_account = BillForward::Account.create account
 
-
+			## Credit note payment method exists implicitly nowadays
 			# create for our account: a new payment method, using credit notes
-			payment_method = BillForward::PaymentMethod.new({
-				'accountID' => created_account.id,
-				'name' => 'Credit Notes',
-				'description' => 'Pay using credit',
-				# engines will link this to an invoice once paid, for the sake of refunds
-				'linkID' => '',
-				'gateway' => 'credit_note',
-				'userEditable' => 0,
-				'priority' => 100,
-				'reusable' => 1
-				})
-			created_payment_method = BillForward::PaymentMethod::create(payment_method)
+			# payment_method = BillForward::PaymentMethod.new({
+			# 	'accountID' => created_account.id,
+			# 	'name' => 'Credit Notes',
+			# 	'description' => 'Pay using credit',
+			# 	# engines will link this to an invoice once paid, for the sake of refunds
+			# 	'linkID' => '',
+			# 	'gateway' => 'credit_note',
+			# 	'userEditable' => 0,
+			# 	'priority' => 100,
+			# 	'reusable' => 1
+			# 	})
+			# created_payment_method = BillForward::PaymentMethod::create(payment_method)
 
 
 			# issue $100 credit to our account
 			credit_note = BillForward::CreditNote.new({
 				"accountID" => created_account.id,
-			    "nominalValue" => 1000,
+			    "value" => 1000,
 			    "currency" => "USD"
 				})
 			created_credit_note = BillForward::CreditNote.create(credit_note)
 
+			uom_1_name = 'CPU'
+			created_uom_1 = nil
+			begin
+				created_uom_1 = BillForward::UnitOfMeasure.get_by_id uom_1_name
+			rescue IndexError=>e
+				# create a unit of measure
+				unit_of_measure_1 = BillForward::UnitOfMeasure.new({
+					'name' => uom_1_name,
+					'displayedAs' => 'Cycles',
+					'roundingScheme' => 'UP',
+					})
+				created_uom_1 = BillForward::UnitOfMeasure.create(unit_of_measure_1)
+			end
 
-			# create a unit of measure
-			unit_of_measure_1 = BillForward::UnitOfMeasure.new({
-				'name' => 'CPU',
-				'displayedAs' => 'Cycles',
-				'roundingScheme' => 'UP',
-				})
-			created_uom_1 = BillForward::UnitOfMeasure.create(unit_of_measure_1)
+			uom_2_name = 'Bandwidth'
+			created_uom_2 = nil
+			begin
+				created_uom_2 = BillForward::UnitOfMeasure.get_by_id uom_2_name
+			rescue IndexError=>e
+				# create another unit of measure
+				unit_of_measure_2 = BillForward::UnitOfMeasure.new({
+					'name' => uom_2_name,
+					'displayedAs' => 'Mbps',
+					'roundingScheme' => 'UP',
+					})
+				created_uom_2 = BillForward::UnitOfMeasure.create(unit_of_measure_2)
+			end
 
-			# create another unit of measure
-			unit_of_measure_2 = BillForward::UnitOfMeasure.new({
-				'name' => 'Bandwidth',
-				'displayedAs' => 'Mbps',
-				'roundingScheme' => 'UP',
-				})
-			created_uom_2 = BillForward::UnitOfMeasure.create(unit_of_measure_2)
-
-
-			# create a product
-			product = BillForward::Product.new({
-				'productType' => 'recurring',
-				'state' => 'prod',
-				'name' => 'Monthly recurring',
-				'description' => 'Purchaseables to which customer has a non-renewing, monthly entitlement',
-				'durationPeriod' => 'months',
-				'duration' => 1,
-				})
-			created_product = BillForward::Product::create(product)
+			product_name = 'Monthly recurring'
+			created_product = nil
+			begin
+				created_product = BillForward::Product.get_by_id product_name
+			rescue IndexError=>e
+				# create a product
+				product = BillForward::Product.new({
+					'productType' => 'recurring',
+					'state' => 'prod',
+					'name' => product_name,
+					'description' => 'Purchaseables to which customer has a non-renewing, monthly entitlement',
+					'durationPeriod' => 'months',
+					'duration' => 1,
+					})
+				created_product = BillForward::Product::create(product)
+			end
 
 
 			# make product rate plan..
@@ -173,23 +189,25 @@ describe BillForward::Subscription do
 					'tiers' => tiers_for_tiered_component_2
 				}))
 
-
-			# create product rate plan, using pricing components and product
-			prp = BillForward::ProductRatePlan.new({
-				'currency' => 'USD',
-				'name' => 'Sound Plan',
-				'pricingComponents' => pricing_components,
-				'productID' => created_product.id,
+			rate_plan_name = 'Sound Plan'
+			created_prp = nil
+			begin
+				created_prp = BillForward::ProductRatePlan.get_by_product_and_plan_id product_name, rate_plan_name
+			rescue IndexError=>e
+				# create product rate plan, using pricing components and product
+				prp = BillForward::ProductRatePlan.new({
+					'currency' => 'USD',
+					'name' => rate_plan_name,
+					'pricingComponents' => pricing_components,
+					'productID' => created_product.id,
 				})
-			created_prp = BillForward::ProductRatePlan.create(prp)
-
-			puts created_prp.id
-
+				created_prp = BillForward::ProductRatePlan.create(prp)
+			end
 
 			# create references for tests to use
 			@created_account = created_account
 			@created_prp = created_prp
-			@created_payment_method = created_payment_method
+			# @created_payment_method = created_payment_method
 
 			@created_product = created_product
 			@created_uom_1 = created_uom_1
@@ -203,14 +221,6 @@ describe BillForward::Subscription do
 					# - account [we have this already]
 					# - product rate plan [we have this already]
 					# - pricing component value instances (for every pricing component on the PRP)
-					# - payment method subscription links (for every payment method on the account)
-
-					# create PaymentMethodSubscriptionLink from payment method and organisation
-					payment_method_subscription_links = Array.new
-					payment_method_subscription_links.push(
-						BillForward::PaymentMethodSubscriptionLink.new({
-							'paymentMethodID' => @created_payment_method.id
-						}))
 
 
 					pricing_components = @created_prp.pricingComponents
@@ -238,7 +248,6 @@ describe BillForward::Subscription do
 						'accountID' =>                      @created_account.id,
 						'name' =>                           'Memorable Subscription',
 						'description' =>                    'Memorable Subscription Description',
-						'paymentMethodSubscriptionLinks' => payment_method_subscription_links,
 						'pricingComponentValues' =>         pricing_component_values
 						})
 					created_sub = BillForward::Subscription.create(subscription)
@@ -258,7 +267,7 @@ describe BillForward::Subscription do
 					expect(subscription['state']).to eq('Provisioned')
 					updated_subscription = subscription.activate
 
-					expect(updated_subscription['state']).to eq('AwaitingPayment')
+					expect(updated_subscription['state']).to satisfy{|s| ['AwaitingPayment', 'Paid'].include?(s)}
 				end
 				describe 'ProductRatePlanMigrationAmendment' do
 					before :all do
@@ -341,21 +350,27 @@ describe BillForward::Subscription do
 								'tiers' => tiers_for_tiered_component_2
 							}))
 
-
-						# create product rate plan, using pricing components and product
-						prp = BillForward::ProductRatePlan.new({
-							'currency' => 'USD',
-							'name' => 'A Plan comes together',
-							'pricingComponents' => pricing_components,
-							'productID' => @created_product.id,
-							})
-						created_prp = BillForward::ProductRatePlan.create(prp)
+						rate_plan_2_name = 'A Plan comes together'
+						created_prp = nil
+						begin
+							created_prp = BillForward::ProductRatePlan.get_by_product_and_plan_id @created_product.name, rate_plan_2_name
+						rescue IndexError=>e
+							# create product rate plan, using pricing components and product
+							prp = BillForward::ProductRatePlan.new({
+								'currency' => 'USD',
+								'name' => rate_plan_2_name,
+								'pricingComponents' => pricing_components,
+								'productID' => @created_product.id,
+								})
+							created_prp = BillForward::ProductRatePlan.create(prp)
+						end
 
 						@new_prp = created_prp
 					end
 					subject(:subscription) { @created_sub }
 					it 'can be migrated' do
-						puts @created_sub.migrate_plan(Hash.new, @new_prp.id)
+						migration_amendment = @created_sub.migrate_plan(Hash.new, @new_prp.id)
+						expect(migration_amendment.productRatePlanID).to eq(@new_prp.id)
 					end
 				end
 			end
