@@ -6,4 +6,4 @@ pushd $MYDIR/..
 trap "popd" EXIT SIGHUP SIGINT SIGTERM
 
 sh $MYDIR/local_bundle_build.sh
-gem install bill_forward
+gem install bill_forward --no-ri --no-rdoc

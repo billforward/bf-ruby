@@ -15,17 +15,7 @@ module BillForward
 				entity = self.new if entity.nil?
 				TypeCheck.verifyObj(self, entity, 'entity')
 
-				serial = entity.serialize
-				client = entity._client
-
-				route = entity.class.resource_path.path
-				endpoint = ''
-				url_full = "#{route}/#{endpoint}"
-
-				response = client.post_first(url_full, serial)
-
-				created_entity = self.new(response, client)
-				created_entity
+				self.request_first('post', '', entity, nil, entity._client)
 			end
 		end
 	end

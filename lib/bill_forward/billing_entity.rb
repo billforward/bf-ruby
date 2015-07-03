@@ -139,32 +139,6 @@ module BillForward
 			end
 		end
 
-		# Asks API to update existing instance of this entity,
- 		# based on current model.
-	    # 
-	    # @return [self] The updated Entity
-		def save()
-			self.class.request_first('put', '', self, nil, _client)
-		end
-
-		# Asks API to retire existing instance of this entity.
-		# @note Many BillForward entities do not support RETIRE
-		# @note As-yet untested
-	    # 
-	    # @return [self] The retired Entity
-		def delete()
-			self.class.request_first('delete', '', nil, _client)
-		end
-
-		def create(entity = nil)
-			entity = self.new if entity.nil?
-			TypeCheck.verifyObj(self, entity, 'entity')
-
-			self.class.request_first('post', '', entity, nil, entity._client)
-		end
-
-		alias_method :retire, :delete
-
 		def method_missing(method_id, *arguments, &block)
 			# no call to super; our criteria is all keys.
 			#setter
