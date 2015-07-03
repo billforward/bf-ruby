@@ -5,7 +5,7 @@ describe BillForward::PaymentMethod do
 		@client = BillForwardTest::TEST_CLIENT
 		BillForward::Client.default_client = @client
 	end
-	describe '::create' do
+	skip '::create' do
 		context 'account exists' do
 			context 'using credit' do
 				before :all do
