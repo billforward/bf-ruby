@@ -8,13 +8,13 @@ describe BillForward::Account do
 	describe '::get_all' do
 		it 'raises permissions error' do
 			# 'admin' privilege is insufficient to see other organisations
-			expect{BillForward::Organisation::get_all}.to raise_error(BillForward::ApiError, /415/)
-			# TODO: consider that API v219 (at least) gives instead:
+			expect{BillForward::Organisation::get_all}.to raise_error(BillForward::ApiError, /500/)
+			# Expected error:
 			# ====
-	  #      400 API Error.
-	  #      Type: PermissionsError
-	  #      Message: Access is denied
-	  #      ====
+	    	# 500 API Error.
+	    	# Type: PermissionsError
+	    	# Message: Access is denied
+	    	# ====
 		end
 	end
 	describe '::get_mine' do
