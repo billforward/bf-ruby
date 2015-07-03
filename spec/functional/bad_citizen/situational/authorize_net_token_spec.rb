@@ -14,11 +14,15 @@ describe BillForward::AuthorizeNetToken do
 		it 'creates a token' do
 			created_account = BillForward::Account.create
 
+			organisations = BillForward::Organisation.get_mine
+			first_org = organisations.first
+
 			authorize_net_token = BillForward::AuthorizeNetToken.new({
 				'accountID' => created_account.id,
 				'customerProfileID' => @authorize_net_customer_profile_id,
 				'customerPaymentProfileID' => @authorize_net_customer_payment_profile_id,
 				'lastFourDigits' => @authorize_net_card_last_4_digits,
+				'organizationID' => first_org.id
 				})
 
 			created_token = BillForward::AuthorizeNetToken.create(authorize_net_token)

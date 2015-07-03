@@ -8,8 +8,8 @@ describe BillForward::Subscription do
 	context 'upon creating required entities for chargeable Subscription' do
 		before :all do
 			# get our organisation
-			organisations = BillForward::Organisation.get_mine
-			first_org = organisations.first
+			# organisations = BillForward::Organisation.get_mine
+			# first_org = organisations.first
 
 
 			# create an account
@@ -247,7 +247,7 @@ describe BillForward::Subscription do
 						'productRatePlanID' =>              @created_prp.id,
 						'accountID' =>                      @created_account.id,
 						'name' =>                           'Memorable Subscription',
-						'description' =>                    'Memorable Subscription Description',
+						'description' =>                    "Customer acquired through 'Lazy Wednesdays' promotion",
 						'pricingComponentValues' =>         pricing_component_values
 						})
 					created_sub = BillForward::Subscription.create(subscription)
