@@ -15,6 +15,26 @@ module BillForward
         raise DenyMethod.new 'Create support is denied for this entity; '+
           'Invoices are generated instead by the BillForward Engines.'
       end
+
+      def get_by_subscription_id(id, query_params = {}, custom_client = nil)
+        raise ArgumentError.new("id cannot be nil") if id.nil?
+
+        endpoint = sprintf('subscription/%s',
+          ERB::Util.url_encode(id)
+          )
+
+        self.request_many('get', endpoint, query_params, custom_client)
+      end
+
+      def get_by_account_id(id, query_params = {}, custom_client = nil)
+        raise ArgumentError.new("id cannot be nil") if id.nil?
+
+        endpoint = sprintf('account/%s',
+          ERB::Util.url_encode(id)
+          )
+
+        self.request_many('get', endpoint, query_params, custom_client)
+      end
     end
 
   protected

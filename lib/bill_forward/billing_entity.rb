@@ -296,7 +296,11 @@ module BillForward
 			@_registered_entities[key] = entity_class
 			# if key exists in the provided hash, add it to current entity's model
 			if hash.has_key? key
-				entity = entity_class.build_entity(hash[key])
+				val = hash[key]
+				if (val.nil?)
+					return
+				end
+				entity = entity_class.build_entity(val)
 				set_state_param(key, entity)
 			end
 		end
