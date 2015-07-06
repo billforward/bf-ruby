@@ -18,6 +18,20 @@ module BillForward
       end
     end
 
+    def productRatePlan
+      if (super.nil?)
+        self.productRatePlan = BillForward::ProductRatePlan::get_by_id self.productRatePlanID
+      end
+      super
+    end
+
+    def product
+      if (super.nil?)
+        self.product = BillForward::Product::get_by_id self.productID
+      end
+      super
+    end
+
     def activate
       set_state_param('state', 'AwaitingPayment')
       response = save

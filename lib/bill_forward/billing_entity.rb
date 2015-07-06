@@ -139,14 +139,29 @@ module BillForward
 			end
 		end
 
+
+
 		def method_missing(method_id, *arguments, &block)
+			def camel_case_lower(operand)
+				operand.split('_').reduce('') do |accumulator, iterand|
+					accumulator.empty? \
+						? iterand \
+						: accumulator + iterand.capitalize
+				end
+			end
+
+			qualified = camel_case_lower method_id.to_s
+			if qualified != method_id.to_s
+				return self.send(qualified.intern, *arguments)
+			end
+
 			# no call to super; our criteria is all keys.
 			#setter
-			if /^(\w+)=$/ =~ method_id.to_s
+			if /^(\w+)=$/ =~ qualified
 				return set_state_param($1, arguments.first)
 			end
 			#getter
-			get_state_param(method_id.to_s)
+			get_state_param(qualified)
 		end
 
 		def [](key)
