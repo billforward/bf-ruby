@@ -296,8 +296,8 @@ Build the gemspec locally:
 gem build bill_forward.gemspec
 ```
 
-Then publish it:
+Then publish the resulting gem:
 
 ```bash
-gem publish
+gem publish bill_forward-1.2015.217.gem
 ```
