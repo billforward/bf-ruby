@@ -299,5 +299,5 @@ gem build bill_forward.gemspec
 Then publish the resulting gem:
 
 ```bash
-gem publish bill_forward-1.2015.217.gem
+gem push bill_forward-1.2015.217.gem
 ```
