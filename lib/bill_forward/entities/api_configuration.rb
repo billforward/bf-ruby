@@ -16,7 +16,7 @@ module BillForward
 				ERB::Util.url_encode(type)
 			)
 
-			self.request_many('get', endpoint, query_params, custom_client)
+			self.request_first('get', endpoint, query_params, custom_client)
 		end
 	end
   end
