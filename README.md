@@ -22,7 +22,7 @@ gem install bill_forward
 ### From RubyGems mirror
 
 Add the `bill_forward` gem to your application's Gemfile and run `bundle`:
-```ruby
+```bash
 source 'https://rubygems.org'
 gem 'bill_forward'
 ```
@@ -282,4 +282,22 @@ end
 Run main functional tests + offline tests + situational tests with:
 ```bash
 rake spec_all
+```
+
+### Releasing
+
+Bump the version in `lib/bill_forward/version.rb`, with a major version bump if there are breaking changes.
+
+Minor revision is determined by [days since start of year](http://www.wolframalpha.com/input/?i=days+since+start+of+year) (rounded down).
+
+Build the gemspec locally:
+
+```bash
+gem build bill_forward.gemspec
+```
+
+Then publish it:
+
+```bash
+gem publish
 ```
