@@ -290,6 +290,8 @@ Bump the version in `lib/bill_forward/version.rb`, with a major version bump if 
 
 Minor revision is determined by [days since start of year](http://www.wolframalpha.com/input/?i=days+since+start+of+year) (rounded down).
 
+If you publish twice in a day, it becomes day.1, day.2 and so on.
+
 Build the gemspec locally:
 
 ```bash
