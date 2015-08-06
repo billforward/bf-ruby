@@ -38,9 +38,40 @@ module BillForward
       response
     end
 
+    def add_payment_method(id)
+      raise ArgumentError.new("id cannot be nil") if id.nil?
+
+      endpoint = sprintf('%s/payment-methods',
+          ERB::Util.url_encode(self.id)
+          )
+
+      request_entity = BillForward::GenericEntity.new({
+        'id' => id
+        })
+
+      self.class.request_first('post', endpoint, request_entity, nil, custom_client)
+    end
+
+    def remove_payment_method(id)
+      raise ArgumentError.new("id cannot be nil") if id.nil?
+
+      endpoint = sprintf('%s/payment-methods/%s',
+          ERB::Util.url_encode(self.id),
+          ERB::Util.url_encode(id)
+          )
+
+      self.class.request_first('delete', endpoint, nil, custom_client)
+    end
+
+    def get_payment_methods(query_params = {}, custom_client = nil)
+      endpoint = sprintf('%s/payment-methods',
+          ERB::Util.url_encode(self.id)
+          )
+
+      self.class.request_many_heterotyped(BillForward::PaymentMethod, 'get', endpoint, query_params, custom_client)
+    end
+
     #### MIGRATE PLAN VIA AMENDMENT
-
-
 
     # Migrates subscription to new plan, with PricingComponentValue values corresponding to named PricingComponents.
     # This works only for 'arrears' or 'in advance' pricing components.
