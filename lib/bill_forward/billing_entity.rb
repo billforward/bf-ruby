@@ -173,19 +173,40 @@ module BillForward
 			method_missing(set_key, value)
 		end
 
+		def state_params
+			@_state_params
+		end
+
+		def serialize_field(field)
+			if field.is_a? BillingEntity
+				serialize_field field.state_params
+			elsif field.is_a? Array
+				# return a transformed array, where each field has been serialized
+				field.map do |iterand|
+					serialize_field iterand
+				end
+			elsif field.is_a? Hash
+				# the lengths I have to go to achieve immutability in Ruby 1.8.7
+				clone = hash_with_type_at_top field
+				clone.each do |key, value|
+					clone[key] = serialize_field value
+				end
+				clone
+			else
+				field
+			end
+		end
+		
 		def to_ordered_hash
-			ordered_hash = hash_with_type_at_top(@_state_params)
-			ordered_hash
+			serialize_field self
 		end
 
 		def to_json(*a)
-			ordered_hash = to_ordered_hash
-			ordered_hash.to_json
-			# @_state_params.to_json
+			to_ordered_hash.to_json
 		end
 
 		def to_unordered_hash
-			json_string = to_json
+			json_string = to_json.to_s
 			JSON.parse(json_string)
 		end
 

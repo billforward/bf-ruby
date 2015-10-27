@@ -27,3 +27,4 @@ twolinechange.bat
 spec/test_constants.rb
 scratch/scratch.rb
 *.scratch.rb
+scratch/rails/*
