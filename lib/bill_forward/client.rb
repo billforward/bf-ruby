@@ -295,7 +295,7 @@ module BillForward
               error = split.first.split('=').last
               description = split.last.split('=').last
 
-              raise_message = "\n====\n#{rcode} Authorization failed.\nType: #{type}\nError: #{error}\nDescription: #{description}\n====\n"
+              raise_message = "\n====\n#{rcode} Authorization failed.\nType: #{errorType}\nError: #{error}\nDescription: #{description}\n====\n"
 
               raise ApiAuthorizationError.new(error, rbody), raise_message
             else
