@@ -16,6 +16,16 @@ module BillForward
 
         self.request_many('get', endpoint, query_params, custom_client)
       end
+
+      def get_by_version_id(id, query_params = {}, custom_client = nil)
+        raise ArgumentError.new("id cannot be nil") if id.nil?
+
+        endpoint = sprintf('version/%s',
+          ERB::Util.url_encode(id)
+          )
+
+        self.request_first('get', endpoint, query_params, custom_client)
+      end
     end
 
     def productRatePlan
