@@ -18,8 +18,8 @@ module BillForward
 		# @note As-yet untested
 	    # 
 	    # @return [self] The retired Entity
-		def delete()
-			self.class.request_first('delete', '', nil, _client)
+		def delete
+			self.class.request_first('delete', ERB::Util.url_encode(id), nil, nil, _client)
 		end
 
 		alias_method :retire, :delete
