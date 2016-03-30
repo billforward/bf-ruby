@@ -87,13 +87,14 @@ module BillForward
     def initialize(options={})
       TypeCheck.verifyObj(Hash, options, 'options')
       @use_logging = options[:use_logging]
+      @logger = options[:logger] || Logger.new(STDOUT)
 
       if options[:host]
         @host = options[:host]
       else
         raise ClientInstantiationException.new "Failed to initialize BillForward API Client\n" +
-                                         "Required parameters: :host, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
-                                         "Supplied Parameters: #{options}"
+                                               "Required parameters: :host and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                               "Supplied Parameters: #{options}"
       end
 
       if options[:use_proxy]
@@ -112,10 +113,9 @@ module BillForward
           @password = options[:password]
         else
           raise ClientException.new "Failed to initialize BillForward API Client\n"+
-                                           "Required parameters: :host and :use_logging, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
-                                           "Supplied Parameters: #{options}"
+                                    "Required parameters: :host and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                    "Supplied Parameters: #{options}"
         end
-
       end
 
       @authorization = nil
@@ -221,8 +221,9 @@ module BillForward
 
         token = get_token
 
-        log "#{verb} #{url}"
+        log "#{verb.upcase} #{full_url}"
         log "token: #{token}"
+        log "payload: #{payload}" if payload
 
         begin
           response = execute_request(verb, full_url, token, payload)
@@ -311,9 +312,7 @@ module BillForward
       end
 
       def log(*args)
-        if @use_logging
-          puts *args
-        end
+        @logger.info *args if @use_logging
       end
 
       def get_token

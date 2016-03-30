@@ -3,6 +3,9 @@ require 'json'
 # used for escaping query parameters
 require 'erb'
 
+# This is in the Ruby stdlib. It is probably possible for us to make this an optional dependency (required only if you enable logging and want to use default logger).
+require 'logger'
+
 # Rails extensions
 # 'indifferent hashes' are used to enable string access to entities unserialized with symbol keys
 require 'active_support/core_ext/hash/indifferent_access'
