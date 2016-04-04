@@ -7,6 +7,22 @@ module BillForward
   class Account < MutableEntity
   	@resource_path = BillForward::ResourcePath.new("accounts", "account")
 
+    class << self
+      def credit(id, query_object = {}, custom_client = nil)
+        raise ArgumentError.new("id cannot be nil") if id.nil?
+
+        endpoint = sprintf('%s/credit',
+                           ERB::Util.url_encode(id)
+        )
+
+        request_entity = BillForward::GenericEntity.new(
+            query_object
+        )
+
+        self.request_first('post', endpoint, request_entity, nil, custom_client)
+      end
+    end
+
   protected
     def unserialize_all(hash)
       super
