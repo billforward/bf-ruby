@@ -22,7 +22,7 @@ tmp
 mkmf.log
 .idea/dictionaries
 .idea
-bill_forward.iml
+*.iml
 .rakeTasks
 onelinechange.bat
 twolinechange.bat

@@ -35,6 +35,20 @@ module BillForward
 
         self.request_many('get', endpoint, query_params, custom_client)
       end
+
+      def recalculate(id, query_object = {}, custom_client = nil)
+        raise ArgumentError.new("id cannot be nil") if id.nil?
+
+        endpoint = sprintf('%s/recalculate',
+                           ERB::Util.url_encode(id)
+        )
+
+        request_entity = BillForward::GenericEntity.new(
+            query_object
+        )
+
+        self.request_first('post', endpoint, request_entity, nil, custom_client)
+      end
     end
 
   protected
