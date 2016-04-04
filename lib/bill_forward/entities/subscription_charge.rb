@@ -19,9 +19,7 @@ module BillForward
 
         self.request_first('post', endpoint, request_entity, nil, custom_client)
       end
-    end
 
-    class << self
       def batch_recalculate(id, query_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
