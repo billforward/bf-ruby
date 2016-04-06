@@ -46,8 +46,9 @@ module BillForward
     @@all_verbs = @@payload_verbs + @@no_payload_verbs
 
     attr_accessor :host
-    attr_accessor :use_logging
     attr_accessor :api_token
+    attr_accessor :use_logging
+    attr_accessor :logger
 
     # provide access to self statics
     class << self
@@ -144,6 +145,10 @@ module BillForward
       args = [url, options]
       args.insert(1, payload) if haspayload
 
+      log "#{verb.upcase} #{url}"
+      log "headers: #{JSON.pretty_generate(options)}"
+      log "payload: #{payload}" if haspayload
+
       RestClient.send(verb.intern, *args)
     end
 
@@ -220,10 +225,6 @@ module BillForward
         : [distilled_url, param_string].join('?')
 
         token = get_token
-
-        log "#{verb.upcase} #{full_url}"
-        log "token: #{token}"
-        log "payload: #{payload}" if payload
 
         begin
           response = execute_request(verb, full_url, token, payload)
