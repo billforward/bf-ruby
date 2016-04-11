@@ -46,8 +46,9 @@ module BillForward
     @@all_verbs = @@payload_verbs + @@no_payload_verbs
 
     attr_accessor :host
-    attr_accessor :use_logging
     attr_accessor :api_token
+    attr_accessor :use_logging
+    attr_accessor :logger
 
     # provide access to self statics
     class << self
@@ -87,13 +88,14 @@ module BillForward
     def initialize(options={})
       TypeCheck.verifyObj(Hash, options, 'options')
       @use_logging = options[:use_logging]
+      @logger = options[:logger] || Logger.new(STDOUT)
 
       if options[:host]
         @host = options[:host]
       else
         raise ClientInstantiationException.new "Failed to initialize BillForward API Client\n" +
-                                         "Required parameters: :host, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
-                                         "Supplied Parameters: #{options}"
+                                               "Required parameters: :host and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                               "Supplied Parameters: #{options}"
       end
 
       if options[:use_proxy]
@@ -112,10 +114,9 @@ module BillForward
           @password = options[:password]
         else
           raise ClientException.new "Failed to initialize BillForward API Client\n"+
-                                           "Required parameters: :host and :use_logging, and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
-                                           "Supplied Parameters: #{options}"
+                                    "Required parameters: :host and either [:api_token] or all of [:client_id, :client_secret, :username, :password].\n" +
+                                    "Supplied Parameters: #{options}"
         end
-
       end
 
       @authorization = nil
@@ -143,6 +144,10 @@ module BillForward
 
       args = [url, options]
       args.insert(1, payload) if haspayload
+
+      log "#{verb.upcase} #{url}"
+      log "headers: #{JSON.pretty_generate(options)}"
+      log "payload: #{payload}" if haspayload
 
       RestClient.send(verb.intern, *args)
     end
@@ -220,9 +225,6 @@ module BillForward
         : [distilled_url, param_string].join('?')
 
         token = get_token
-
-        log "#{verb} #{url}"
-        log "token: #{token}"
 
         begin
           response = execute_request(verb, full_url, token, payload)
@@ -311,9 +313,7 @@ module BillForward
       end
 
       def log(*args)
-        if @use_logging
-          puts *args
-        end
+        @logger.info *args if @use_logging
       end
 
       def get_token
