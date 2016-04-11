@@ -19,7 +19,7 @@ module BillForward
             request_object
         )
 
-        self.request_first('post', endpoint, request_entity, nil, custom_client)
+        self.request_first_heterotyped(BillForward::CreditNote, 'post', endpoint, request_entity, nil, custom_client)
       end
     end
 

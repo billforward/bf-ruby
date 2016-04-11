@@ -71,7 +71,7 @@ module BillForward
                            ERB::Util.url_encode(id)
         )
 
-        self.request_many('get', endpoint, query_params, custom_client)
+        self.request_many_heterotyped(BillForward:: SubscriptionCharge, 'get', endpoint, query_params, custom_client)
       end
     end
 
