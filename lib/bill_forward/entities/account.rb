@@ -8,7 +8,7 @@ module BillForward
   	@resource_path = BillForward::ResourcePath.new("accounts", "account")
 
     class << self
-      def credit(id, query_object = {}, custom_client = nil)
+      def credit(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
         endpoint = sprintf('%s/credit',
@@ -16,7 +16,7 @@ module BillForward
         )
 
         request_entity = BillForward::GenericEntity.new(
-            query_object
+            request_object
         )
 
         self.request_first('post', endpoint, request_entity, nil, custom_client)

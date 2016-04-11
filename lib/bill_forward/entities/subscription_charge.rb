@@ -6,7 +6,7 @@ module BillForward
   	@resource_path = BillForward::ResourcePath.new('charges', 'subscriptionCharge')
 
     class << self
-      def recalculate(id, query_object = {}, custom_client = nil)
+      def recalculate(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
         endpoint = sprintf('%s/recalculate',
@@ -14,13 +14,13 @@ module BillForward
         )
 
         request_entity = BillForward::GenericEntity.new(
-            query_object
+            request_object
         )
 
         self.request_first('post', endpoint, request_entity, nil, custom_client)
       end
 
-      def batch_recalculate(id, query_object = {}, custom_client = nil)
+      def batch_recalculate(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
         endpoint = sprintf('recalculate',
@@ -28,7 +28,7 @@ module BillForward
         )
 
         request_entity = BillForward::GenericEntity.new(
-            query_object
+            request_object
         )
 
         self.request_first('post', endpoint, request_entity, nil, custom_client)
