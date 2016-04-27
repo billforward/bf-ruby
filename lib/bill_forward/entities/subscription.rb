@@ -30,7 +30,7 @@ module BillForward
       def create_charge(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
-        endpoint = sprintf('%s/charges',
+        endpoint = sprintf('%s/charge',
                            ERB::Util.url_encode(id)
         )
 
