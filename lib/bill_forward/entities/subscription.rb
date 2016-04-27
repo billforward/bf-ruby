@@ -27,7 +27,7 @@ module BillForward
         self.request_first('get', endpoint, query_params, custom_client)
       end
 
-      def create_charge(id, request_object = {}, custom_client = nil)
+      def add_charge(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
         endpoint = sprintf('%s/charge',
@@ -42,7 +42,7 @@ module BillForward
       end
     end
 
-    def create_charge(request_object = {}, custom_client = nil)
+    def add_charge(request_object = {}, custom_client = nil)
       self.class.create_charge(self.id, request_object, custom_client)
     end
 

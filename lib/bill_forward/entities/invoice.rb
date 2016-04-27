@@ -74,7 +74,7 @@ module BillForward
         self.request_many_heterotyped(BillForward::SubscriptionCharge, 'get', endpoint, query_params, custom_client)
       end
 
-      def create_charge(id, request_object = {}, custom_client = nil)
+      def add_charge(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
         endpoint = sprintf('%s/charges',
