@@ -6,6 +6,11 @@ module BillForward
   	@resource_path = BillForward::ResourcePath.new('charges', 'subscriptionCharge')
 
     class << self
+      def create(entity = nil)
+        raise DenyMethod.new 'Create support is denied for this entity; '+
+                                 'Please use Invoice.create_charge or Subscription.create_charge instead.'
+      end
+
       def recalculate(id, request_object = {}, custom_client = nil)
         raise ArgumentError.new("id cannot be nil") if id.nil?
 
