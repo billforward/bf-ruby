@@ -73,6 +73,24 @@ module BillForward
 
         self.request_many_heterotyped(BillForward::SubscriptionCharge, 'get', endpoint, query_params, custom_client)
       end
+
+      def add_charge(id, request_object = {}, custom_client = nil)
+        raise ArgumentError.new("id cannot be nil") if id.nil?
+
+        endpoint = sprintf('%s/charges',
+                           ERB::Util.url_encode(id)
+        )
+
+        request_entity = BillForward::GenericEntity.new(
+            request_object
+        )
+
+        self.request_many_heterotyped(BillForward::SubscriptionCharge, 'post', endpoint, request_entity, nil, custom_client)
+      end
+    end
+
+    def add_charge(request_object = {}, custom_client = nil)
+      self.class.add_charge(self.id, request_object, custom_client)
     end
 
   protected
