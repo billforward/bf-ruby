@@ -43,7 +43,7 @@ module BillForward
     end
 
     def add_charge(request_object = {}, custom_client = nil)
-      self.class.create_charge(self.id, request_object, custom_client)
+      self.class.add_charge(self.id, request_object, custom_client)
     end
 
     def productRatePlan

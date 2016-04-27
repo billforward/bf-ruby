@@ -89,6 +89,10 @@ module BillForward
       end
     end
 
+    def add_charge(request_object = {}, custom_client = nil)
+      self.class.add_charge(self.id, request_object, custom_client)
+    end
+
   protected
     def unserialize_all(hash)
       super
