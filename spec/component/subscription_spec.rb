@@ -9,27 +9,28 @@ describe BillForward::Subscription do
       # skip OAuth request
       allow_any_instance_of(BillForward::Client).to receive(:get_token).and_return('fake token')
    end
+
 	describe '::get_by_id' do
 		context 'where subscription exists' do
 			describe 'the unserialized subscription' do
+				let(:response) { double :response }
+				let(:subscription_id) { 'ACD66517-6F32-44CB-AF8C-3097F97E1E67' }
+				let(:subscription) { BillForward::Subscription.get_by_id(subscription_id) }
+
+				before do
+					allow(response).to receive(:to_str).and_return(canned_subscription_get)
+					allow(RestClient::Request).to receive(:execute).and_return(response)
+					# mainly just confirm that unserialization is reasonably healthy.
+					expect(subscription.id).to eq(subscription_id)
+				end
+
 				describe '.to_ordered_hash' do
 					context 'using array access' do
 						it "has @type at top" do
-				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
-
-				            response = double
-				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-				            allow(RestClient::Request).to receive(:execute).and_return(response)
-
-				            subscription = BillForward::Subscription.get_by_id subscription_id
-
-				            # mainly just confirm that unserialization is reasonably healthy.
-				            expect(subscription.id).to eq(subscription_id)
-
-				            # check that @type is the first key on subscription (we use ordered hashes)
-				            payload = subscription.to_ordered_hash
-				            payload_first_kvp = payload.first
-				            kvp_key  = payload_first_kvp.first
+							# check that @type is the first key on subscription (we use ordered hashes)
+							payload = subscription.to_ordered_hash
+							payload_first_kvp = payload.first
+							kvp_key  = payload_first_kvp.first
 							expect(kvp_key).to eq('@type')
 
 							# check that @type is the first key on nested entities (we use ordered hashes)
@@ -41,17 +42,6 @@ describe BillForward::Subscription do
 					end
 					context 'using dot access' do
 						it "has @type at top" do
-				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
-
-				            response = double
-				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-				            allow(RestClient::Request).to receive(:execute).and_return(response)
-
-				            subscription = BillForward::Subscription.get_by_id subscription_id
-
-				            # mainly just confirm that unserialization is reasonably healthy.
-				            expect(subscription.id).to eq(subscription_id)
-
 				            # check that @type is the first key on subscription (we use ordered hashes)
 				            payload = subscription.to_ordered_hash
 				            payload_first_kvp = payload.first
@@ -64,6 +54,10 @@ describe BillForward::Subscription do
 							kvp_key  = pricing_component_first_kvp.first
 							expect(kvp_key).to eq('@type')
 						end
+
+						it 'has product_id at the top' do
+							expect(subscription.product_id).to eq("0CE0A471-A8B1-4E33-B5F4-115947DE8C55")
+						end
 					end
 				end
 				# NOTE: ideally no anonymous entity would exist, because we would register all known nested entities.
@@ -74,26 +68,10 @@ describe BillForward::Subscription do
 				describe 'nested anonymous entity' do
 					context 'using dot access' do
 						it "can be read" do
-				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
-
-				            response = double
-				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-				            allow(RestClient::Request).to receive(:execute).and_return(response)
-
-				            subscription = BillForward::Subscription.get_by_id subscription_id
-
 							a_pricing_component = subscription.productRatePlan.pricingComponents.first
 							expect(a_pricing_component.name).to eq('Devices used, fixed')
 						end
 						it "can be changed" do
-				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
-
-				            response = double
-				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-				            allow(RestClient::Request).to receive(:execute).and_return(response)
-
-				            subscription = BillForward::Subscription.get_by_id subscription_id
-
 							a_pricing_component = subscription.productRatePlan.pricingComponents.first
 							expect(a_pricing_component.name).to eq('Devices used, fixed')
 
@@ -105,26 +83,10 @@ describe BillForward::Subscription do
 					end
 					context 'using array access' do
 						it "can be read" do
-				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
-
-				            response = double
-				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-				            allow(RestClient::Request).to receive(:execute).and_return(response)
-
-				            subscription = BillForward::Subscription.get_by_id subscription_id
-
 							a_pricing_component = subscription['productRatePlan']['pricingComponents'].first
 							expect(a_pricing_component['name']).to eq('Devices used, fixed')
 						end
 						it "can be changed" do
-				            subscription_id = 'ACD66517-6F32-44CB-AF8C-3097F97E1E67'
-
-				            response = double
-				            allow(response).to receive(:to_str).and_return(canned_subscription_get)
-				            allow(RestClient::Request).to receive(:execute).and_return(response)
-
-				            subscription = BillForward::Subscription.get_by_id subscription_id
-
 							a_pricing_component = subscription['productRatePlan']['pricingComponents'].first
 							expect(a_pricing_component['name']).to eq('Devices used, fixed')
 
