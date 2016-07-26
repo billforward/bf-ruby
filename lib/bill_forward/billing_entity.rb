@@ -146,7 +146,7 @@ module BillForward
 				elements = operand.split('_')
 				camel_cased = elements.join('_').camelize(:lower)
 
-				camel_cased[-1] = camel_cased[-1].upcase if elements.size > 1 && elements.last == 'id'
+				camel_cased.gsub!(/Id/, 'ID') if elements.size > 1 && elements.last =~ /id=?\Z/
 
 				camel_cased
 			end

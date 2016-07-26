@@ -58,6 +58,13 @@ describe BillForward::Subscription do
 						it 'has product_id at the top' do
 							expect(subscription.product_id).to eq("0CE0A471-A8B1-4E33-B5F4-115947DE8C55")
 						end
+
+                                                it 'can set the product_id to something else' do
+                                                  subscription.product_id = 100
+                                                  expect(subscription.product_id).to eq(100)
+                                                  expect(subscription.productID).to eq(100)
+                                                  expect(subscription['productID']).to eq(100)
+                                                end
 					end
 				end
 				# NOTE: ideally no anonymous entity would exist, because we would register all known nested entities.
