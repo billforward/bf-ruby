@@ -21,21 +21,21 @@ describe BillForward::Subscription do
 			first_org = organisations.first
 
 
-			# remove from our organisation all existing AuthorizeNetConfigurations (if any)
-			filtered = first_org.apiConfigurations.reject do |config|
-				config['@type'] == 'AuthorizeNetConfiguration'
-			end
-			first_org.apiConfigurations = filtered
+			# # remove from our organisation all existing AuthorizeNetConfigurations (if any)
+			# filtered = first_org.apiConfigurations.reject do |config|
+			# 	config['@type'] == 'AuthorizeNetConfiguration'
+			# end
+			# first_org.apiConfigurations = filtered
 
 
-			# add to our organisation: a new AuthorizeNetConfiguration
-			first_org.apiConfigurations.push BillForward::APIConfiguration.new({
-				 "@type" =>          "AuthorizeNetConfiguration",
-			     "APILoginID" =>     @authorize_net_login_id,
-			     "transactionKey" => @authorize_net_transaction_key,
-			     "environment" =>    "Sandbox"
-				})
-			updated_org = first_org.save
+			# # add to our organisation: a new AuthorizeNetConfiguration
+			# first_org.apiConfigurations.push BillForward::APIConfiguration.new({
+			# 	 "@type" =>          "AuthorizeNetConfiguration",
+			#      "APILoginID" =>     @authorize_net_login_id,
+			#      "transactionKey" => @authorize_net_transaction_key,
+			#      "environment" =>    "Sandbox"
+			# 	})
+			# updated_org = first_org.save
 
 
 			# create an account
@@ -236,7 +236,7 @@ describe BillForward::Subscription do
 			@created_account = created_account
 			@created_prp = created_prp
 			@created_payment_method = created_payment_method
-			@updated_org = updated_org
+			@updated_org = first_org
 		end
 		subject(:account) { @created_account }
 		subject(:prp) { @created_prp }
