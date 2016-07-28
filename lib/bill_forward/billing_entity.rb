@@ -6,7 +6,7 @@ module BillForward
 
 		def initialize(state_params = nil, client = nil)
 			raise AbstractInstantiateError.new('This abstract class cannot be instantiated!') if self.class == MutableEntity
-			
+
 			client = self.class.singleton_client if client.nil?
 			state_params = {} if state_params.nil?
 
@@ -20,7 +20,7 @@ module BillForward
 			# initiate with empty state params
 			# use indifferent hash so 'id' and :id are the same
 			@_state_params = HashWithIndifferentAccess.new
-			# legacy Ruby gives us this 'id' chuff. we kinda need it back.	
+			# legacy Ruby gives us this 'id' chuff. we kinda need it back.
 			@_state_params.instance_eval { undef id if defined? id }
 			# populate state params now
 			unserialize_all state_params
@@ -143,14 +143,16 @@ module BillForward
 
 		def method_missing(method_id, *arguments, &block)
 			def camel_case_lower(operand)
-				operand.split('_').reduce('') do |accumulator, iterand|
-					accumulator.empty? \
-						? iterand \
-						: accumulator + iterand.capitalize
-				end
+				elements = operand.split('_')
+				camel_cased = elements.join('_').camelize(:lower)
+
+				camel_cased.gsub!(/Id/, 'ID') if elements.size > 1 && elements.last =~ /id=?\Z/
+
+				camel_cased
 			end
 
 			qualified = camel_case_lower method_id.to_s
+
 			if qualified != method_id.to_s
 				return self.send(qualified.intern, *arguments)
 			end
@@ -196,7 +198,7 @@ module BillForward
 				field
 			end
 		end
-		
+
 		def to_ordered_hash
 			serialize_field self
 		end
