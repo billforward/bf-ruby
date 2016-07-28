@@ -2,6 +2,10 @@
 
 This client library provides (via Ruby) easy access to the BillForward API.
 
+## Support
+
+Until [commit 1ca55](https://github.com/billforward/bf-ruby/tree/1ca55ca8d361130c935df68e3b6496611221938a), [version 1.2016.117](https://rubygems.org/gems/bill_forward/versions/1.2016.117), the SDK targeted Ruby 1.8.7.
+
 ## Installation
 ### From Git
 
