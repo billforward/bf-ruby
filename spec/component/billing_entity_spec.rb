@@ -89,6 +89,18 @@ describe BillForward::BillingEntity do
 				expect(entity['id']).to eq(newid)
 			end
 		end
+
+		describe '#_dump' do
+			it 'uses to_json to dump the entity' do
+				expect(entity._dump(1)).to eq(entity.to_json)
+			end
+		end
+
+		describe '._load' do
+			it 'successfully loads the dumped data' do
+				expect(described_class._load(entity._dump(1)).to_json).to eq(entity.to_json)
+			end
+		end
 	end
 end
 

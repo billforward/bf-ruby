@@ -137,9 +137,15 @@ module BillForward
 			def get_all(query_params = {}, custom_client = nil)
 				self.request_many('get', '', query_params, custom_client)
 			end
+
+			def _load(data)
+				build_entity(JSON.parse(data))
+			end
 		end
 
-
+		def _dump(_level)
+			to_json
+		end
 
 		def method_missing(method_id, *arguments, &block)
 			def camel_case_lower(operand)
