@@ -27,7 +27,7 @@ gem install bill_forward
 
 ### From RubyGems mirror
 
-Add the `bill_forward` gem to your application's Gemfile and run `bundle`:
+Add the [`bill_forward` gem](https://rubygems.org/gems/bill_forward) to your application's Gemfile and run `bundle`:
 ```bash
 source 'https://rubygems.org'
 gem 'bill_forward'
