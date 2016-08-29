@@ -67,6 +67,11 @@ describe BillForward::Subscription do
                                                 end
 					end
 				end
+
+				describe '.as_json' do
+					specify { expect(subscription.as_json).to eq(subscription.to_ordered_hash) }
+				end
+
 				# NOTE: ideally no anonymous entity would exist, because we would register all known nested entities.
 				# they're sort of a 'last resort' for when the API has more fields than we realized (ie version change, or lack of parity).
 				# this test will soon self-deprecate, because we aim to register all entities that we support anyway.

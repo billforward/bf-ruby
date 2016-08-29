@@ -209,6 +209,8 @@ module BillForward
 			serialize_field self
 		end
 
+		alias as_json to_ordered_hash
+
 		def to_json(*a)
 			to_ordered_hash.to_json
 		end
